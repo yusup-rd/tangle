@@ -65,14 +65,14 @@ export default function ({ className }: UserButtonProps) {
 							<DropdownMenuItem onClick={() => setTheme("light")}>
 								<Sun className="mr-2 size-4" />
 								Light
-                                {theme === "light" && (
+								{theme === "light" && (
 									<Check className="ms-2 size-4" />
 								)}
 							</DropdownMenuItem>
 							<DropdownMenuItem onClick={() => setTheme("dark")}>
 								<Moon className="mr-2 size-4" />
 								Dark
-                                {theme === "dark" && (
+								{theme === "dark" && (
 									<Check className="ms-2 size-4" />
 								)}
 							</DropdownMenuItem>
