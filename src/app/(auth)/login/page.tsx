@@ -1,11 +1,11 @@
-import signupImage from "@/assets/signup.jpeg";
 import { Metadata } from "next";
-import Image from "next/image";
+import LoginForm from "./LoginForm";
 import Link from "next/link";
-import SignUpForm from "./SignUpForm";
+import loginImage from "@/assets/login.jpeg";
+import Image from "next/image";
 
 export const metadata: Metadata = {
-	title: "Sign Up",
+	title: "Login",
 };
 
 export default function Page() {
@@ -14,27 +14,25 @@ export default function Page() {
 			<div className="flex h-full max-h-[40rem] w-full max-w-[64rem] overflow-hidden rounded-2xl bg-card shadow-2xl">
 				<div className="w-full space-y-10 overflow-y-auto p-10 md:w-1/2">
 					<div className="space-y-1 text-center">
-						<h1 className="text-3xl font-bold">
-							Sign Up to Tangle
-						</h1>
+						<h1 className="text-3xl font-bold">Log In to Tangle</h1>
 						<p className="text-muted-foreground">
 							Where connections and stories{" "}
 							<span className="italic">intertwine</span>
 						</p>
 					</div>
 					<div className="space-y-5">
-						<SignUpForm />
+						<LoginForm />
 						<Link
-							href="/login"
+							href="/signup"
 							className="block text-center hover:underline"
 						>
-							Already have an account? Log In
+							Don't have an account? Sign Up
 						</Link>
 					</div>
 				</div>
 				<Image
-					src={signupImage}
-					alt="Sign Up Image"
+					src={loginImage}
+					alt="Login Image"
 					className="hidden w-1/2 object-cover md:block"
 				/>
 			</div>
