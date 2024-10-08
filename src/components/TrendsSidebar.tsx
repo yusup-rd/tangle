@@ -48,7 +48,7 @@ export default function TrendsSidebar() {
 						className="flex items-center justify-between gap-3"
 					>
 						<Link
-							href={`/users.${user.username}`}
+							href={`/users/${user.username}`}
 							className="flex items-center gap-3"
 						>
 							<UserProfile
