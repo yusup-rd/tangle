@@ -2,7 +2,6 @@ import { validateRequest } from "@/auth";
 import FollowButton from "@/components/FollowButton";
 import FollowerCount from "@/components/FollowerCount";
 import TrendsSidebar from "@/components/TrendsSidebar";
-import { Button } from "@/components/ui/button";
 import UserProfile from "@/components/UserProfile";
 import prisma from "@/lib/prisma";
 import { FollowerInfo, getUserDataSelect, UserData } from "@/lib/types";
@@ -13,6 +12,7 @@ import { notFound } from "next/navigation";
 import { cache } from "react";
 import UserPosts from "./UserPosts";
 import Linkify from "@/components/Linkify";
+import EditProfileButton from "./EditProfileButton";
 
 interface PageProps {
 	params: { username: string };
@@ -124,7 +124,7 @@ async function UserProfileHero({ user, loggedInUserId }: UserProfileHeroProps) {
 					</div>
 				</div>
 				{user.id === loggedInUserId ? (
-					<Button>Edit Profile</Button>
+					<EditProfileButton user={user} />
 				) : (
 					<FollowButton
 						userId={user.id}
@@ -134,7 +134,7 @@ async function UserProfileHero({ user, loggedInUserId }: UserProfileHeroProps) {
 			</div>
 			{user.bio && (
 				<>
-					<hr />\
+					<hr />
 					<Linkify>
 						<div className="overflow-hidden whitespace-pre-line break-words">
 							{user.bio}
