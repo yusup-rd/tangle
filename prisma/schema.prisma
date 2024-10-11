@@ -54,10 +54,10 @@ model Follow {
 }
 
 model Post {
-  id           String  @id @default(cuid())
-  content      String
-  userId       String
-  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id          String  @id @default(cuid())
+  content     String
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   attachments Media[]
 
   createdAt DateTime @default(now())

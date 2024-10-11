@@ -18,12 +18,12 @@ export default function useMediaUpload() {
 				const ext = file.name.split(".").pop();
 
 				return new File(
-                    [file],
-                    `attachment_${crypto.randomUUID()}.${ext}`,
-                    {
-					    type: file.type,
-                    }
-                );
+					[file],
+					`attachment_${crypto.randomUUID()}.${ext}`,
+					{
+						type: file.type,
+					},
+				);
 			});
 
 			setAttachments((prev) => [
