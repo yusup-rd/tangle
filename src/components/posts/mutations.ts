@@ -1,4 +1,4 @@
-import { useToast } from "../ui/use-toast";
+import { PostPage } from "@/lib/types";
 import {
 	InfiniteData,
 	QueryFilters,
@@ -6,12 +6,14 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { usePathname, useRouter } from "next/navigation";
+import { useToast } from "../ui/use-toast";
 import { deletePost } from "./actions";
-import { PostPage } from "@/lib/types";
 
 export function useDeletePostMutation() {
 	const { toast } = useToast();
+
 	const queryClient = useQueryClient();
+
 	const router = useRouter();
 	const pathname = usePathname();
 
@@ -43,7 +45,7 @@ export function useDeletePostMutation() {
 				description: "Post deleted",
 			});
 
-			if (pathname === `/post/${deletedPost.id}`) {
+			if (pathname === `/posts/${deletedPost.id}`) {
 				router.push(`/users/${deletedPost.user.username}`);
 			}
 		},
