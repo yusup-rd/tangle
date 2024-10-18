@@ -14,7 +14,7 @@ import LikeButton from "./LikeButton";
 import BookmarkButton from "./BookmarkButton";
 import { useState } from "react";
 import { MessageSquare } from "lucide-react";
-import Comments from "@/app/api/posts/[postId]/comments/Comments";
+import Comments from "@/components/comments/Comments";
 
 interface PostProps {
 	post: PostData;
