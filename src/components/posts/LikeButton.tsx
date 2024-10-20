@@ -35,20 +35,25 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
 			data.isLikedByUser
 				? kyInstance.delete(`/api/posts/${postId}/likes`)
 				: kyInstance.post(`/api/posts/${postId}/likes`),
+
 		onMutate: async () => {
 			await queryClient.cancelQueries({ queryKey });
-
 			const previousState = queryClient.getQueryData<LikeInfo>(queryKey);
 
-			queryClient.setQueryData<LikeInfo>(queryKey, () => ({
-				likes:
-					(previousState?.likes || 0) +
-					(previousState?.isLikedByUser ? -1 : 1),
-				isLikedByUser: !previousState?.isLikedByUser,
-			}));
+			if (previousState) {
+				const newLikes = previousState.isLikedByUser
+					? previousState.likes - 1
+					: previousState.likes + 1;
+
+				queryClient.setQueryData<LikeInfo>(queryKey, {
+					likes: newLikes,
+					isLikedByUser: !previousState.isLikedByUser,
+				});
+			}
 
 			return { previousState };
 		},
+
 		onError(error, variables, context) {
 			queryClient.setQueryData(queryKey, context?.previousState);
 			console.error(error);
