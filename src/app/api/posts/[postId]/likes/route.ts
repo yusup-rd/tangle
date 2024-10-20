@@ -88,7 +88,6 @@ export async function POST(
 				},
 				update: {},
 			}),
-
 			...(loggedInUser.id !== post.userId
 				? [
 						prisma.notification.create({
@@ -150,8 +149,8 @@ export async function DELETE(
 					postId,
 					type: "LIKE",
 				},
-			})
-		])
+			}),
+		]);
 
 		return new Response();
 	} catch (error) {

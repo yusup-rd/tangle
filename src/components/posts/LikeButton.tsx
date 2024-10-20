@@ -1,15 +1,14 @@
+import kyInstance from "@/lib/ky";
 import { LikeInfo } from "@/lib/types";
-import { useToast } from "../ui/use-toast";
+import { cn } from "@/lib/utils";
 import {
-	Query,
 	QueryKey,
 	useMutation,
 	useQuery,
 	useQueryClient,
 } from "@tanstack/react-query";
-import kyInstance from "@/lib/ky";
 import { Heart } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { useToast } from "../ui/use-toast";
 
 interface LikeButtonProps {
 	postId: string;
@@ -18,13 +17,15 @@ interface LikeButtonProps {
 
 export default function LikeButton({ postId, initialState }: LikeButtonProps) {
 	const { toast } = useToast();
+
 	const queryClient = useQueryClient();
+
 	const queryKey: QueryKey = ["like-info", postId];
 
 	const { data } = useQuery({
-		queryKey: ["like-info", postId],
+		queryKey,
 		queryFn: () =>
-			kyInstance.get(`api/posts/${postId}/likes`).json<LikeInfo>(),
+			kyInstance.get(`/api/posts/${postId}/likes`).json<LikeInfo>(),
 		initialData: initialState,
 		staleTime: Infinity,
 	});
@@ -32,25 +33,22 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
 	const { mutate } = useMutation({
 		mutationFn: () =>
 			data.isLikedByUser
-				? kyInstance.delete(`api/posts/${postId}/likes`)
-				: kyInstance.post(`api/posts/${postId}/likes`),
-
+				? kyInstance.delete(`/api/posts/${postId}/likes`)
+				: kyInstance.post(`/api/posts/${postId}/likes`),
 		onMutate: async () => {
 			await queryClient.cancelQueries({ queryKey });
+
 			const previousState = queryClient.getQueryData<LikeInfo>(queryKey);
 
 			queryClient.setQueryData<LikeInfo>(queryKey, () => ({
-				likes: previousState?.likes
-					? previousState.isLikedByUser
-						? previousState.likes - 1
-						: previousState.likes + 1
-					: 0,
+				likes:
+					(previousState?.likes || 0) +
+					(previousState?.isLikedByUser ? -1 : 1),
 				isLikedByUser: !previousState?.isLikedByUser,
 			}));
 
 			return { previousState };
 		},
-
 		onError(error, variables, context) {
 			queryClient.setQueryData(queryKey, context?.previousState);
 			console.error(error);
@@ -70,8 +68,7 @@ export default function LikeButton({ postId, initialState }: LikeButtonProps) {
 				)}
 			/>
 			<span className="text-sm font-medium tabular-nums">
-				{data.likes}
-				<span className="hidden sm:inline"> likes</span>
+				{data.likes} <span className="hidden sm:inline">likes</span>
 			</span>
 		</button>
 	);
