@@ -17,12 +17,12 @@ interface ChatChannelProps {
 
 export default function ChatChannel({ open, openSidebar }: ChatChannelProps) {
 	return (
-		<div className={cn("w-full md:block", !open && "hidden")}>
+		<div className={cn("w-full overflow-hidden md:block", !open && "hidden")}>
 			<Channel>
 				<Window>
 					<CustomChannelHeader openSidebar={openSidebar} />
 					<MessageList />
-					<MessageInput />
+					<MessageInput grow={true}/>
 				</Window>
 			</Channel>
 		</div>
