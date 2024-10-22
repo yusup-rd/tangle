@@ -36,7 +36,7 @@ export default function Page() {
 							href="/signup"
 							className="block text-center hover:underline"
 						>
-							Don't have an account? Sign Up
+							Don&apos;t have an account? Sign Up
 						</Link>
 					</div>
 				</div>

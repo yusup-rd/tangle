@@ -42,7 +42,7 @@ export default function UserPosts({ userId }: UserPostsProps) {
 	if (status === "success" && !posts.length && !hasNextPage) {
 		return (
 			<p className="text-center text-muted-foreground">
-				The user hasn't posted anything yet.
+				The user hasn&apos;t posted anything yet.
 			</p>
 		);
 	}
