@@ -7,6 +7,7 @@ import UserTooltip from "@/components/UserTooltip";
 import prisma from "@/lib/prisma";
 import { getPostDataInclude, UserData } from "@/lib/types";
 import { Loader2 } from "lucide-react";
+import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
@@ -28,7 +29,9 @@ const getPost = cache(async (postId: string, loggedInUserId: string) => {
 	return post;
 });
 
-export async function generationMetadata({ params: { postId } }: PageProps) {
+export async function generateMetadata({
+	params: { postId },
+}: PageProps): Promise<Metadata> {
 	const { user } = await validateRequest();
 
 	if (!user) return {};
@@ -46,7 +49,7 @@ export default async function Page({ params: { postId } }: PageProps) {
 	if (!user) {
 		return (
 			<p className="text-destructive">
-				You are not authorized to view this page.
+				You&apos;re not authorized to view this page.
 			</p>
 		);
 	}
@@ -73,7 +76,7 @@ interface UserInfoSidebarProps {
 	user: UserData;
 }
 
-export async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
+async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
 	const { user: loggedInUser } = await validateRequest();
 
 	if (!loggedInUser) return null;
