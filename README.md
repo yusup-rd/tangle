@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# Tangle Social Media App
 
-## Getting Started
+Tangle is a modern, full-featured social media platform built with Next.js 15 and an array of powerful technologies. It provides a rich user experience, optimized performance, and real-time interactivity.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **User Authentication**: Secure username/password authentication with Google OAuth2 (Lucia).
+- **Dynamic Social Interactions**:
+  - Like, follow, comment, and bookmarking systems.
+  - Real-time notifications and a direct messaging system (powered by Stream).
+- **Content Creation**:
+  - Drag & drop and copy-paste support for media uploads (UploadThing).
+  - Tiptap editor for rich text editing.
+  - Supports hashtags, mentions, and full-text search.
+- **Advanced UI & UX**:
+  - Infinite scrolling feeds with optimistic updates for seamless experience.
+  - Mobile-responsive layout, dark/light/system themes with Tailwind CSS & Shadcn UI.
+  - Real-time form validation using React Hook Form and Zod.
+- **Server Actions**: Utilize Next.js server actions and components for high efficiency and seamless data fetching.
+- **Data Management**: 
+  - Postgres DB with Prisma ORM.
+  - TanStack React Query for advanced caching, data fetching, and revalidation.
+- **Media Management**: 
+  - User profile avatars with cropping and resizing.
+  - Cron job to delete orphaned uploads (Vercel).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Technologies Used
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend**: Next.js 15, Tailwind CSS, Shadcn UI components, TanStack React Query, React Hook Form, Zod, TipTap editor.
+- **Backend**: Next.js Server Actions and Server Components, Prisma ORM, Postgres DB.
+- **Authentication**: Lucia (username/password & Google OAuth2).
+- **Real-time Features**: Stream Chat for DM system.
+- **Media Handling**: UploadThing (drag & drop, copy-paste uploads).
+- **Hosting and Deployment**: Vercel with a custom cron job for periodic maintenance.
