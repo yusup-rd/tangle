@@ -2,6 +2,8 @@
 
 Tangle is a modern, full-featured social media platform built with Next.js 15 and an array of powerful technologies. It provides a rich user experience, optimized performance, and real-time interactivity.
 
+[Live App](https://tangle-app.vercel.app/)
+
 ## Features
 
 - **User Authentication**: Secure username/password authentication with Google OAuth2 (Lucia).
