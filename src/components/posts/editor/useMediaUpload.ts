@@ -60,6 +60,11 @@ export default function useMediaUpload() {
 			return { file, previewUrl };
 		});
 		const batchNames = new Set(batch.map(({ file }) => file.name));
+		const totalBytes = batch.reduce(
+			(total, { file }) => total + file.size,
+			0,
+		);
+		const uploadedBytesByFile = new Map<File, number>();
 		setAttachments((previous) => [...previous, ...batch]);
 		setUploadProgress(0);
 
@@ -67,9 +72,18 @@ export default function useMediaUpload() {
 			const results = await uploadFiles("attachment", {
 				files: batch.map(({ file }) => file),
 				signal: controller.signal,
-				onUploadProgress: ({ totalProgress }) => {
-					setUploadProgress(Math.floor(totalProgress));
-					if (totalProgress < 100 || callbackTimer !== undefined)
+				onUploadProgress: ({ file, loaded }) => {
+					uploadedBytesByFile.set(file, Math.min(file.size, loaded));
+					const uploadedBytes = [
+						...uploadedBytesByFile.values(),
+					].reduce((total, bytes) => total + bytes, 0);
+					setUploadProgress(
+						Math.floor((uploadedBytes / (totalBytes || 1)) * 100),
+					);
+					if (
+						uploadedBytes < totalBytes ||
+						callbackTimer !== undefined
+					)
 						return;
 					callbackTimer = setTimeout(() => {
 						callbackTimedOut = true;
