@@ -1,13 +1,14 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useCallback, useMemo, useState } from "react";
 import { ChannelSearchSource, SearchController } from "stream-chat";
 import { Chat as StreamChat } from "stream-chat-react";
 import "stream-chat-react/dist/css/index.css";
+import "./chat.css";
 import ChatChannel from "./ChatChannel";
+import ChatLoading from "./ChatLoading";
 import ChatSidebar from "./ChatSidebar";
 import useInitializeChatClient from "./useInitializeChatClient";
 
@@ -42,23 +43,10 @@ export default function Chat() {
 			</section>
 		);
 	}
-	if (!chatClient) {
-		return (
-			<div
-				role="status"
-				className="mx-auto flex h-fit items-center gap-2 py-3"
-			>
-				<Loader2
-					className="size-5 motion-safe:animate-spin"
-					aria-hidden="true"
-				/>
-				Connecting to messages...
-			</div>
-		);
-	}
+	if (!chatClient) return <ChatLoading />;
 
 	return (
-		<main className="tangle-chat relative min-h-[60dvh] w-full overflow-hidden rounded-lg bg-card shadow-sm">
+		<main className="tangle-chat relative min-h-[60dvh] w-full min-w-0 overflow-hidden rounded-lg bg-card shadow-sm">
 			<div className="absolute top-0 bottom-0 flex w-full">
 				<StreamChat
 					client={chatClient}

@@ -6,11 +6,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfile from "@/components/UserProfile";
 import useDebounce from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Loader2, SearchIcon, X } from "lucide-react";
+import { Check, SearchIcon, X } from "lucide-react";
 import { useState } from "react";
 import { UserResponse } from "stream-chat";
 import { useChatContext } from "stream-chat-react";
@@ -36,7 +37,7 @@ export default function NewChatDialog({
 
 	const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
 
-	const { data, isFetching, isError, isSuccess } = useQuery({
+	const { data, isPending, isError, isSuccess } = useQuery({
 		queryKey: ["stream-users", searchInputDebounced],
 		queryFn: async () =>
 			client.queryUsers(
@@ -153,8 +154,16 @@ export default function NewChatDialog({
 								No users found. Try a different name.
 							</p>
 						)}
-						{isFetching && (
-							<Loader2 className="mx-auto my-3 animate-spin" />
+						{isPending && (
+							<div
+								role="status"
+								aria-label="Loading users"
+								className="space-y-3 p-4"
+							>
+								<Skeleton className="h-10" />
+								<Skeleton className="h-10" />
+								<Skeleton className="h-10" />
+							</div>
 						)}
 						{isError && (
 							<p className="my-3 text-center text-destructive">

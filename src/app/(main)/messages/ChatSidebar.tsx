@@ -11,6 +11,7 @@ import {
 	WithComponents,
 } from "stream-chat-react";
 import { useSession } from "../SessionProvider";
+import { ConversationListSkeleton } from "./ChatLoading";
 import NewChatDialog from "./NewChatDialog";
 
 interface ChatSidebarProps {
@@ -37,8 +38,10 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
 		(props: ChannelListItemUIProps) => (
 			<ChannelListItemUI
 				{...props}
-				onSelect={() => {
-					props.setActiveChannel?.(props.channel, props.watchers);
+				onSelect={(event) => {
+					if (props.onSelect) props.onSelect(event);
+					else
+						props.setActiveChannel?.(props.channel, props.watchers);
 					onClose();
 				}}
 			/>
@@ -49,13 +52,16 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
 	return (
 		<div
 			className={cn(
-				"size-full flex-col border-e md:flex md:w-64 lg:w-72",
+				"min-h-0 w-full shrink-0 flex-col md:flex md:w-64 md:border-e lg:w-72",
 				open ? "flex" : "hidden",
 			)}
 		>
 			<MenuHeader onClose={onClose} />
 			<WithComponents
-				overrides={{ ChannelListItemUI: ChannelPreviewCustom }}
+				overrides={{
+					ChannelListItemUI: ChannelPreviewCustom,
+					LoadingIndicator: ConversationListSkeleton,
+				}}
 			>
 				<ChannelList
 					filters={{
@@ -80,7 +86,7 @@ function MenuHeader({ onClose }: MenuHeaderProps) {
 
 	return (
 		<>
-			<div className="flex items-center gap-3 p-2">
+			<div className="flex shrink-0 items-center gap-3 p-2">
 				<div className="h-full md:hidden">
 					<Button
 						size="icon"

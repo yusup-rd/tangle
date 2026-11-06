@@ -1,0 +1,61 @@
+.tangle-chat .str-chat.str-chat {
+	--str-chat__font-family: inherit;
+	--str-chat__accent-primary: hsl(var(--primary));
+	--str-chat__accent-error: hsl(var(--destructive));
+	--str-chat__text-primary: hsl(var(--foreground));
+	--str-chat__text-secondary: hsl(var(--muted-foreground));
+	--str-chat__text-tertiary: hsl(var(--muted-foreground));
+	--str-chat__text-on-accent: hsl(var(--primary-foreground));
+	--str-chat__text-link: hsl(var(--primary));
+	--str-chat__background-core-app: hsl(var(--background));
+	--str-chat__background-core-elevation-0: hsl(var(--card));
+	--str-chat__background-core-elevation-1: hsl(var(--card));
+	--str-chat__background-core-elevation-2: hsl(var(--popover));
+	--str-chat__background-core-elevation-3: hsl(var(--popover));
+	--str-chat__background-core-surface-default: hsl(var(--background));
+	--str-chat__background-core-surface-card: hsl(var(--card));
+	--str-chat__background-core-surface-subtle: hsl(var(--muted));
+	--str-chat__background-core-surface-strong: hsl(var(--accent));
+	--str-chat__background-utility-hover: hsl(var(--muted));
+	--str-chat__background-utility-pressed: hsl(var(--accent));
+	--str-chat__background-utility-selected: hsl(var(--accent));
+	--str-chat__border-core-default: hsl(var(--border));
+	--str-chat__border-core-subtle: hsl(var(--border));
+	--str-chat__border-core-strong: hsl(var(--input));
+	--str-chat__border-utility-focused: hsl(var(--ring));
+	--str-chat__chat-bg-incoming: hsl(var(--muted));
+	--str-chat__chat-bg-outgoing: hsl(var(--accent));
+	--str-chat__chat-bg-attachment-incoming: hsl(var(--card));
+	--str-chat__chat-bg-attachment-outgoing: hsl(var(--card));
+	--str-chat__chat-text-incoming: hsl(var(--foreground));
+	--str-chat__chat-text-outgoing: hsl(var(--accent-foreground));
+	--str-chat__chat-text-link: hsl(var(--primary));
+	--str-chat__skeleton-loading-base: hsl(var(--muted));
+	--str-chat__skeleton-loading-highlight: hsl(var(--accent));
+}
+
+/* Tangle controls which pane is visible on narrow screens. */
+.tangle-chat .str-chat__channel-list {
+	position: relative;
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+	min-height: 0;
+	visibility: visible;
+	pointer-events: auto;
+	transform: none;
+}
+
+.tangle-chat .str-chat__channel-list-inner {
+	padding-bottom: 0;
+}
+
+.tangle-chat .str-chat__channel-header {
+	flex: 1;
+	min-width: 0;
+}
+
+.tangle-chat .str-chat__quoted-message-preview__author {
+	overflow: clip;
+	text-overflow: ellipsis;
+}
