@@ -54,28 +54,29 @@ export default function useMediaUpload() {
 		activeUpload.current = controller;
 		let callbackTimer: ReturnType<typeof setTimeout> | undefined;
 		let callbackTimedOut = false;
-
-		const batch = files.map((original) => {
-			const extension = original.name.match(/\.[^.]+$/)?.[0] ?? "";
-			const file = new File(
-				[original],
-				`attachment_${crypto.randomUUID()}${extension}`,
-				{ type: original.type },
-			);
-			const previewUrl = URL.createObjectURL(file);
-			previewUrls.current.set(file.name, previewUrl);
-			return { file, previewUrl };
-		});
-		const batchNames = new Set(batch.map(({ file }) => file.name));
-		const totalBytes = batch.reduce(
-			(total, { file }) => total + file.size,
-			0,
-		);
-		const uploadedBytesByFile = new Map<File, number>();
-		setAttachments((previous) => [...previous, ...batch]);
-		setUploadProgress(0);
+		const batchNames = new Set<string>();
 
 		try {
+			const batch = files.map((original) => {
+				const extension = original.name.match(/\.[^.]+$/)?.[0] ?? "";
+				const file = new File(
+					[original],
+					`attachment_${crypto.randomUUID()}${extension}`,
+					{ type: original.type },
+				);
+				const previewUrl = URL.createObjectURL(file);
+				batchNames.add(file.name);
+				previewUrls.current.set(file.name, previewUrl);
+				return { file, previewUrl };
+			});
+			const totalBytes = batch.reduce(
+				(total, { file }) => total + file.size,
+				0,
+			);
+			const uploadedBytesByFile = new Map<File, number>();
+			setAttachments((previous) => [...previous, ...batch]);
+			setUploadProgress(0);
+
 			const results = await uploadFiles("attachment", {
 				files: batch.map(({ file }) => file),
 				signal: controller.signal,
