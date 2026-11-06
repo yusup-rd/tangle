@@ -9,7 +9,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useDropzone } from "@uploadthing/react";
-import { ImageIcon, Loader2, X } from "lucide-react";
+import { ImageIcon, X } from "lucide-react";
 import Image from "next/image";
 import { ClipboardEvent, useRef } from "react";
 import { useSubmitPostMutation } from "./mutations";
@@ -31,7 +31,9 @@ export default function PostEditor() {
 	} = useMediaUpload();
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
-		onDrop: startUpload,
+		onDrop: (files) => {
+			if (!mutation.isPending) void startUpload(files);
+		},
 	});
 
 	const editor = useEditor({
@@ -83,7 +85,7 @@ export default function PostEditor() {
 			.filter((item) => item.kind === "file")
 			.map((item) => item.getAsFile())
 			.filter((file) => file !== null);
-		startUpload(files);
+		if (!mutation.isPending) void startUpload(files);
 	}
 
 	return (
@@ -118,15 +120,23 @@ export default function PostEditor() {
 				/>
 			)}
 			<div className="flex items-center justify-end gap-3">
-				{isUploading && (
-					<>
-						<span className="text-sm">{uploadProgress ?? 0}%</span>
-						<Loader2 className="size-5 animate-spin text-primary" />
-					</>
+				{uploadProgress !== undefined && (
+					<span
+						role="status"
+						className="text-sm text-muted-foreground"
+					>
+						{uploadProgress === 100
+							? "Finishing upload…"
+							: `Uploading ${uploadProgress}%`}
+					</span>
 				)}
 				<AddAttachmentsButton
 					onSelectFiles={startUpload}
-					disabled={isUploading || attachments.length >= 5}
+					disabled={
+						mutation.isPending ||
+						isUploading ||
+						attachments.length >= 5
+					}
 				/>
 				<LoadingButton
 					onClick={onSubmit}
@@ -217,21 +227,19 @@ interface AttachmentPreviewProps {
 }
 
 function AttachmentPreview({
-	attachment: { file, isUploading },
+	attachment: { file, previewUrl, mediaId },
 	onRemoveClick,
 }: AttachmentPreviewProps) {
-	const src = URL.createObjectURL(file);
-
 	return (
 		<div
 			className={cn(
 				"relative mx-auto size-fit",
-				isUploading && "opacity-50",
+				!mediaId && "opacity-50",
 			)}
 		>
 			{file.type.startsWith("image") ? (
 				<Image
-					src={src}
+					src={previewUrl}
 					alt="Attachment preview"
 					width={500}
 					height={500}
@@ -239,10 +247,10 @@ function AttachmentPreview({
 				/>
 			) : (
 				<video controls className="size-fit max-h-[30rem] rounded-lg">
-					<source src={src} type={file.type} />
+					<source src={previewUrl} type={file.type} />
 				</video>
 			)}
-			{!isUploading && (
+			{mediaId && (
 				<button
 					aria-label={`Remove ${file.name}`}
 					onClick={onRemoveClick}

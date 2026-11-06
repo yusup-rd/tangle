@@ -14,7 +14,11 @@ export const fileRouter = {
 		.middleware(async () => {
 			const { user } = await validateRequest();
 
-			if (!user) throw new UploadThingError("Unauthorized");
+			if (!user)
+				throw new UploadThingError({
+					code: "FORBIDDEN",
+					message: "Unauthorized",
+				});
 
 			return { user };
 		})
@@ -57,7 +61,11 @@ export const fileRouter = {
 		.middleware(async () => {
 			const { user } = await validateRequest();
 
-			if (!user) throw new UploadThingError("Unauthorized");
+			if (!user)
+				throw new UploadThingError({
+					code: "FORBIDDEN",
+					message: "Unauthorized",
+				});
 
 			return {};
 		})
