@@ -67,7 +67,13 @@ export default function BookmarkButton({
 	});
 
 	return (
-		<button onClick={() => mutate()} className="flex items-center gap-2">
+		<button
+			type="button"
+			aria-label="Bookmark post"
+			aria-pressed={data.isBookmarkedByUser}
+			onClick={() => mutate()}
+			className="flex size-11 cursor-pointer items-center justify-center gap-2 rounded-md focus-visible:outline-2 focus-visible:outline-ring"
+		>
 			<Bookmark
 				className={cn(
 					"size-5",

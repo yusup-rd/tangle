@@ -1,13 +1,13 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
+import { getUserDataSelect } from "@/lib/types";
+import { formatNumber } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { Suspense } from "react";
-import UserProfile from "./UserProfile";
-import { unstable_cache } from "next/cache";
-import { formatNumber } from "@/lib/utils";
 import FollowButton from "./FollowButton";
-import { getUserDataSelect } from "@/lib/types";
+import UserProfile from "./UserProfile";
 
 export default function TrendsSidebar() {
 	return (
@@ -39,6 +39,8 @@ export default function TrendsSidebar() {
 			take: 5,
 		});
 
+		if (!usersToFollow.length) return null;
+
 		return (
 			<div className="space-y-5 rounded-lg bg-card p-5 shadow-sm">
 				<div className="text-xl font-bold">Who to follow</div>
@@ -56,7 +58,7 @@ export default function TrendsSidebar() {
 								className="flex-none"
 							/>
 							<div>
-								<p className="line-clamp-1 break-all font-semibold hover:underline">
+								<p className="line-clamp-1 font-semibold break-all hover:underline">
 									{user.displayName}
 								</p>
 								<p className="line-clamp-1 break-all text-muted-foreground">
@@ -109,6 +111,7 @@ const getTrendingTopics = unstable_cache(
 
 async function TrendingTopics() {
 	const trendingTopics = await getTrendingTopics();
+	if (!trendingTopics.length) return null;
 
 	return (
 		<div className="space-y-5 rounded-lg bg-card p-5 shadow-sm">
@@ -123,7 +126,7 @@ async function TrendingTopics() {
 						className="block"
 					>
 						<p
-							className="line-clamp-1 break-all font-semibold hover:underline"
+							className="line-clamp-1 font-semibold break-all hover:underline"
 							title={hashtag}
 						>
 							{hashtag}

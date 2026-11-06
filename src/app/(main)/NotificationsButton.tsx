@@ -27,20 +27,25 @@ export default function NotificationsButton({
 	return (
 		<Button
 			variant="ghost"
-			className="flex items-center justify-start gap-3"
+			className="flex min-w-11 items-center justify-start gap-3 max-sm:h-auto max-sm:min-h-12 max-sm:flex-col max-sm:justify-center max-sm:gap-0.5 max-sm:px-1.5 max-sm:py-1"
 			title="Notifications"
 			asChild
 		>
-			<Link href="/notifications">
+			<Link
+				href="/notifications"
+				aria-label={`Notifications${data.unreadCount ? ` (${data.unreadCount} unread)` : ""}`}
+			>
 				<div className="relative">
-					<Bell />
+					<Bell className="size-5 shrink-0" aria-hidden="true" />
 					{!!data.unreadCount && (
-						<span className="absolute -right-1 -top-1 rounded-full bg-primary px-1 text-xs font-medium tabular-nums text-primary-foreground">
+						<span className="absolute -top-1 -right-1 rounded-full bg-primary px-1 text-xs font-medium text-primary-foreground tabular-nums">
 							{data.unreadCount}
 						</span>
 					)}
 				</div>
-				<span className="hidden lg:inline">Notifications</span>
+				<span className="text-xs sm:max-lg:hidden lg:text-sm">
+					Notifications
+				</span>
 			</Link>
 		</Button>
 	);

@@ -1,9 +1,9 @@
-import { Metadata } from "next";
-import LoginForm from "./LoginForm";
-import Link from "next/link";
 import loginImage from "@/assets/login.jpeg";
+import { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import GoogleSignInButton from "../GoogleSignInButton";
+import LoginForm from "./LoginForm";
 
 export const metadata: Metadata = {
 	title: "Login",
@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 
 export default function Page() {
 	return (
-		<main className="flex h-screen items-center justify-center p-5">
-			<div className="flex h-full max-h-[40rem] w-full max-w-[64rem] overflow-hidden rounded-lg bg-card shadow-2xl">
-				<div className="w-full space-y-10 overflow-y-auto p-10 md:w-1/2">
+		<main className="flex min-h-dvh items-center justify-center p-4 sm:p-6">
+			<div className="relative flex w-full max-w-5xl overflow-hidden rounded-lg bg-card shadow-2xl">
+				<div className="flex w-full flex-col justify-center gap-8 p-6 sm:p-10 md:w-1/2">
 					<div className="space-y-1 text-center">
-						<h1 className="text-3xl font-bold">
+						<h1 className="text-3xl leading-tight font-bold tracking-tight">
 							Log In to{" "}
 							<span className="text-primary">Tangle</span>
 						</h1>
@@ -42,8 +42,9 @@ export default function Page() {
 				</div>
 				<Image
 					src={loginImage}
-					alt="Login Image"
-					className="hidden w-1/2 object-cover md:block"
+					alt=""
+					sizes="(min-width: 64rem) 32rem, 50dvw"
+					className="absolute inset-y-0 end-0 hidden h-full w-1/2 object-cover md:block"
 				/>
 			</div>
 		</main>

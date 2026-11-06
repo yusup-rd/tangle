@@ -1,25 +1,25 @@
 "use client";
 
+import { logout } from "@/app/(auth)/actions";
 import { useSession } from "@/app/(main)/SessionProvider";
+import { cn } from "@/lib/utils";
+import { useQueryClient } from "@tanstack/react-query";
+import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon } from "lucide-react";
+import { useTheme } from "next-themes";
+import Link from "next/link";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
+	DropdownMenuPortal,
 	DropdownMenuSeparator,
 	DropdownMenuSub,
+	DropdownMenuSubContent,
 	DropdownMenuSubTrigger,
 	DropdownMenuTrigger,
-	DropdownMenuPortal,
-	DropdownMenuSubContent,
 } from "./ui/dropdown-menu";
 import UserProfile from "./UserProfile";
-import Link from "next/link";
-import { Check, LogOutIcon, Monitor, Moon, Sun, UserIcon } from "lucide-react";
-import { logout } from "@/app/(auth)/actions";
-import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface UserButtonProps {
 	className?: string;
@@ -33,7 +33,14 @@ export default function UserButton({ className }: UserButtonProps) {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<button className={cn("flex-none rounded-full", className)}>
+				<button
+					type="button"
+					aria-label="Account menu"
+					className={cn(
+						"grid size-11 shrink-0 cursor-pointer place-items-center rounded-full focus-visible:outline-2 focus-visible:outline-ring",
+						className,
+					)}
+				>
 					<UserProfile avatarUrl={user.avatarUrl} size={40} />
 				</button>
 			</DropdownMenuTrigger>
@@ -42,12 +49,12 @@ export default function UserButton({ className }: UserButtonProps) {
 					Logged in as @{user.username}
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<Link href={`/users/${user.username}`}>
-					<DropdownMenuItem>
+				<DropdownMenuItem asChild>
+					<Link href={`/users/${user.username}`}>
 						<UserIcon className="mr-2 size-4" />
 						Profile
-					</DropdownMenuItem>
-				</Link>
+					</Link>
+				</DropdownMenuItem>
 				<DropdownMenuSub>
 					<DropdownMenuSubTrigger>
 						<Monitor className="mr-2 size-4" />

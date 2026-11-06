@@ -1,8 +1,7 @@
 "use client";
 
-import { signUpSchema, SignUpValues } from "@/lib/validation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import LoadingButton from "@/components/LoadingButton";
+import { PasswordInput } from "@/components/PasswordInput";
 import {
 	Form,
 	FormControl,
@@ -12,10 +11,11 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { signUpSchema, SignUpValues } from "@/lib/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { signUp } from "./actions";
-import { PasswordInput } from "@/components/PasswordInput";
-import LoadingButton from "@/components/LoadingButton";
 
 export default function SignUpForm() {
 	const [error, setError] = useState<string>();
@@ -43,7 +43,9 @@ export default function SignUpForm() {
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
 				{error && (
-					<p className="text-center text-destructive">{error}</p>
+					<p role="alert" className="text-center text-destructive">
+						{error}
+					</p>
 				)}
 				<FormField
 					control={form.control}
@@ -52,7 +54,11 @@ export default function SignUpForm() {
 						<FormItem>
 							<FormLabel>Username</FormLabel>
 							<FormControl>
-								<Input placeholder="Username" {...field} />
+								<Input
+									placeholder="Username"
+									autoComplete="username"
+									{...field}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -68,6 +74,7 @@ export default function SignUpForm() {
 								<Input
 									placeholder="Email"
 									type="email"
+									autoComplete="email"
 									{...field}
 								/>
 							</FormControl>
@@ -84,6 +91,7 @@ export default function SignUpForm() {
 							<FormControl>
 								<PasswordInput
 									placeholder="Password"
+									autoComplete="new-password"
 									{...field}
 								/>
 							</FormControl>
