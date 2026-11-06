@@ -1,11 +1,17 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@/generated/prisma/client";
+
+import { PrismaPg } from "@prisma/adapter-pg";
 
 const prismaClientSingleton = () => {
-  return new PrismaClient();
+	return new PrismaClient({
+		adapter: new PrismaPg({
+			connectionString: process.env.POSTGRES_PRISMA_URL,
+		}),
+	});
 };
 
 declare global {
-  var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
+	var prismaGlobal: undefined | ReturnType<typeof prismaClientSingleton>;
 }
 
 const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();

@@ -13,7 +13,7 @@ import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 
 interface PageProps {
-	params: { postId: string };
+	params: Promise<{ postId: string }>;
 }
 
 const getPost = cache(async (postId: string, loggedInUserId: string) => {
@@ -30,8 +30,9 @@ const getPost = cache(async (postId: string, loggedInUserId: string) => {
 });
 
 export async function generateMetadata({
-	params: { postId },
+	params,
 }: PageProps): Promise<Metadata> {
+	const { postId } = await params;
 	const { user } = await validateRequest();
 
 	if (!user) return {};
@@ -43,7 +44,8 @@ export async function generateMetadata({
 	};
 }
 
-export default async function Page({ params: { postId } }: PageProps) {
+export default async function Page({ params }: PageProps) {
+	const { postId } = await params;
 	const { user } = await validateRequest();
 
 	if (!user) {
@@ -94,7 +96,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
 						className="flex-none"
 					/>
 					<div>
-						<p className="line-clamp-1 break-all font-semibold hover:underline">
+						<p className="line-clamp-1 font-semibold break-all hover:underline">
 							{user.displayName}
 						</p>
 						<p className="line-clamp-1 break-all text-muted-foreground">
@@ -104,7 +106,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
 				</Link>
 			</UserTooltip>
 			<Linkify>
-				<div className="line-clamp-6 whitespace-pre-line break-words text-muted-foreground">
+				<div className="line-clamp-6 break-words whitespace-pre-line text-muted-foreground">
 					{user.bio}
 				</div>
 			</Linkify>

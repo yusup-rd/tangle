@@ -1,16 +1,32 @@
-import { google } from "@/auth";
-import { generateCodeVerifier, generateState } from "arctic";
+import {
+	getGoogleOAuthConfig,
+	googleAuthorizationServer,
+} from "@/lib/google-oauth";
 import { cookies } from "next/headers";
+import {
+	calculatePKCECodeChallenge,
+	generateRandomCodeVerifier,
+	generateRandomState,
+} from "oauth4webapi";
 
 export async function GET() {
-	const state = generateState();
-	const codeVerifier = generateCodeVerifier();
+	const { client, redirectUri } = getGoogleOAuthConfig();
+	const state = generateRandomState();
+	const codeVerifier = generateRandomCodeVerifier();
 
-	const url = await google.createAuthorizationURL(state, codeVerifier, {
-		scopes: ["profile", "email"],
-	});
+	const url = new URL(googleAuthorizationServer.authorization_endpoint);
+	url.search = new URLSearchParams({
+		client_id: client.client_id,
+		redirect_uri: redirectUri,
+		response_type: "code",
+		scope: "profile email",
+		state,
+		code_challenge: await calculatePKCECodeChallenge(codeVerifier),
+		code_challenge_method: "S256",
+	}).toString();
 
-	cookies().set("state", state, {
+	const cookieStore = await cookies();
+	cookieStore.set("state", state, {
 		path: "/",
 		secure: process.env.NODE_ENV === "production",
 		httpOnly: true,
@@ -18,7 +34,7 @@ export async function GET() {
 		sameSite: "lax",
 	});
 
-	cookies().set("code_verifier", codeVerifier, {
+	cookieStore.set("code_verifier", codeVerifier, {
 		path: "/",
 		secure: process.env.NODE_ENV === "production",
 		httpOnly: true,

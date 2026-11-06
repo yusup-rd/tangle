@@ -1,87 +1,94 @@
-import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
-import prisma from "./lib/prisma";
-import { Lucia, Session, User } from "lucia";
-import { cache } from "react";
+import type { Session, User } from "@/generated/prisma/client";
 import { cookies } from "next/headers";
-import { Google } from "arctic";
+import { createHash, randomBytes } from "node:crypto";
+import { cache } from "react";
+import prisma from "./lib/prisma";
 
-const adapter = new PrismaAdapter(prisma.session, prisma.user);
+const sessionCookieName = "auth_session";
+const sessionLifetime = 30 * 24 * 60 * 60 * 1000;
+const cookieOptions = {
+	httpOnly: true,
+	path: "/",
+	sameSite: "lax",
+	secure: process.env.NODE_ENV === "production",
+} as const;
+const anonymous = { user: null, session: null };
 
-export const lucia = new Lucia(adapter, {
-	sessionCookie: {
-		expires: false,
-		attributes: {
-			secure: process.env.NODE_ENV === "production",
+export type SessionUser = Pick<
+	User,
+	"id" | "username" | "displayName" | "avatarUrl"
+>;
+
+const hashToken = (token: string) =>
+	createHash("sha256").update(token).digest("hex");
+
+export const startSession = async (userId: string) => {
+	const token = randomBytes(32).toString("base64url");
+	await prisma.session.create({
+		data: {
+			id: hashToken(token),
+			userId,
+			expiresAt: new Date(Date.now() + sessionLifetime),
 		},
-	},
-	getUserAttributes(databaseUserAttributes) {
-		return {
-			id: databaseUserAttributes.id,
-			username: databaseUserAttributes.username,
-			displayName: databaseUserAttributes.displayName,
-			avatarUrl: databaseUserAttributes.avatarUrl,
-			googleId: databaseUserAttributes.googleId,
-		};
-	},
-});
+	});
+	(await cookies()).set(sessionCookieName, token, cookieOptions);
+};
 
-declare module "lucia" {
-	interface Register {
-		Lucia: typeof lucia;
-		DatabaseUserAttributes: DatabaseUserAttributes;
-	}
-}
-
-interface DatabaseUserAttributes {
-	id: string;
-	username: string;
-	displayName: string;
-	avatarUrl: string | null;
-	googleId: string | null;
-}
-
-export const google = new Google(
-	process.env.GOOGLE_CLIENT_ID!,
-	process.env.GOOGLE_CLIENT_SECRET!,
-	`${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/google`,
-);
+export const endSession = async (id: string) => {
+	await prisma.session.deleteMany({ where: { id } });
+	(await cookies()).set(sessionCookieName, "", {
+		...cookieOptions,
+		maxAge: 0,
+	});
+};
 
 export const validateRequest = cache(
 	async (): Promise<
-		{ user: User; session: Session } | { user: null; session: null }
+		{ user: SessionUser; session: Session } | typeof anonymous
 	> => {
-		const sessionId = cookies().get(lucia.sessionCookieName)?.value ?? null;
+		const token = (await cookies()).get(sessionCookieName)?.value;
+		if (!token) return anonymous;
 
-		if (!sessionId) {
-			return {
-				user: null,
-				session: null,
-			};
+		// Lucia stored 40-character base32 tokens directly. Honor those sessions until they expire.
+		const legacyToken = /^[a-z2-7]{40}$/.test(token);
+		if (!legacyToken && !/^[\w-]{43}$/.test(token)) return anonymous;
+		const id = legacyToken ? token : hashToken(token);
+		const result = await prisma.session.findUnique({
+			where: { id },
+			include: {
+				user: {
+					select: {
+						id: true,
+						username: true,
+						displayName: true,
+						avatarUrl: true,
+					},
+				},
+			},
+		});
+		if (!result) return anonymous;
+
+		const { user, ...session } = result;
+		const now = Date.now();
+		if (session.expiresAt.getTime() <= now) {
+			await prisma.session.deleteMany({
+				where: { id, expiresAt: { lte: new Date(now) } },
+			});
+			return anonymous;
 		}
 
-		const result = await lucia.validateSession(sessionId);
+		if (
+			!legacyToken &&
+			session.expiresAt.getTime() - now <= sessionLifetime / 2
+		) {
+			const expiresAt = new Date(now + sessionLifetime);
+			const renewed = await prisma.session.updateMany({
+				where: { id, expiresAt: { gt: new Date(now), lt: expiresAt } },
+				data: { expiresAt },
+			});
+			if (renewed.count) session.expiresAt = expiresAt;
+		}
 
-		try {
-			if (result.session && result.session.fresh) {
-				const sessionCookie = lucia.createSessionCookie(
-					result.session.id,
-				);
-				cookies().set(
-					sessionCookie.name,
-					sessionCookie.value,
-					sessionCookie.attributes,
-				);
-			}
-			if (!result.session) {
-				const sessionCookie = lucia.createBlankSessionCookie();
-				cookies().set(
-					sessionCookie.name,
-					sessionCookie.value,
-					sessionCookie.attributes,
-				);
-			}
-		} catch {}
-
-		return result;
+		return { user, session };
 	},
 );

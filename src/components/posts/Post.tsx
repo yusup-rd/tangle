@@ -1,20 +1,20 @@
 "use client";
 
-import { PostData } from "@/lib/types";
-import Link from "next/link";
-import UserProfile from "../UserProfile";
-import { cn, formatRelativeDate } from "@/lib/utils";
 import { useSession } from "@/app/(main)/SessionProvider";
-import PostMoreButton from "./PostMoreButton";
-import Linkify from "../Linkify";
-import UserTooltip from "../UserTooltip";
-import { Media } from "@prisma/client";
-import Image from "next/image";
-import LikeButton from "./LikeButton";
-import BookmarkButton from "./BookmarkButton";
-import { useState } from "react";
-import { MessageSquare } from "lucide-react";
 import Comments from "@/components/comments/Comments";
+import type { Media } from "@/generated/prisma/browser";
+import { PostData } from "@/lib/types";
+import { cn, formatRelativeDate } from "@/lib/utils";
+import { MessageSquare } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import Linkify from "../Linkify";
+import UserProfile from "../UserProfile";
+import UserTooltip from "../UserTooltip";
+import BookmarkButton from "./BookmarkButton";
+import LikeButton from "./LikeButton";
+import PostMoreButton from "./PostMoreButton";
 
 interface PostProps {
 	post: PostData;
@@ -59,7 +59,7 @@ export default function Post({ post }: PostProps) {
 				)}
 			</div>
 			<Linkify>
-				<div className="whitespace-pre-line break-words">
+				<div className="break-words whitespace-pre-line">
 					{post.content}
 				</div>
 			</Linkify>
