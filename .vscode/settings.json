@@ -11,9 +11,7 @@
 	],
 	"editor.defaultFormatter": "esbenp.prettier-vscode",
 	"editor.formatOnSave": true,
-	"files.associations": {
-		"*.css": "tailwindcss"
-	},
+	"files.associations": { "*.css": "tailwindcss" },
 	"tailwindCSS.experimental.configFile": "src/app/globals.css",
 	"json.schemaDownload.trustedDomains": {
 		"https://ui.shadcn.com/schema.json": true
@@ -30,5 +28,6 @@
 		"package-lock.json",
 		".git"
 	],
-	"prettier.documentSelectors": ["**/*.css"]
+	"prettier.documentSelectors": ["**/*.css"],
+	"[env]": { "editor.defaultFormatter": "IronGeek.vscode-env" }
 }
