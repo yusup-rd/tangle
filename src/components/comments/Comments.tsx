@@ -1,8 +1,8 @@
 import kyInstance from "@/lib/ky";
 import { CommentPage, PostData } from "@/lib/types";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
 import Comment from "./Comment";
 import CommentInput from "./CommentInput";
 
@@ -47,7 +47,14 @@ export default function Comments({ post }: CommentsProps) {
 				</Button>
 			)}
 			{status === "pending" && (
-				<Loader2 className="mx-auto animate-spin" />
+				<div
+					role="status"
+					aria-label="Loading comments"
+					className="flex gap-3 py-3"
+				>
+					<Skeleton className="size-8 rounded-full" />
+					<Skeleton className="h-9 w-2/3" />
+				</div>
 			)}
 			{status === "success" && !comments.length && (
 				<p className="text-center text-muted-foreground">

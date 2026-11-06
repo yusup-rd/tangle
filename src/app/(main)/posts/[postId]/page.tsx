@@ -2,11 +2,11 @@ import { validateRequest } from "@/auth";
 import FollowButton from "@/components/FollowButton";
 import Linkify from "@/components/Linkify";
 import Post from "@/components/posts/Post";
+import { Skeleton } from "@/components/ui/skeleton";
 import UserProfile from "@/components/UserProfile";
 import UserTooltip from "@/components/UserTooltip";
 import prisma from "@/lib/prisma";
 import { getPostDataInclude, UserData } from "@/lib/types";
-import { Loader2 } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -65,7 +65,13 @@ export default async function Page({ params }: PageProps) {
 			</div>
 			<div className="sticky top-[5.25rem] hidden h-fit w-80 flex-none lg:block">
 				<Suspense
-					fallback={<Loader2 className="mx-auto animate-spin" />}
+					fallback={
+						<Skeleton
+							role="status"
+							aria-label="Loading author"
+							className="h-32 rounded-lg"
+						/>
+					}
 				>
 					<UserInfoSidebar user={post.user} />
 				</Suspense>

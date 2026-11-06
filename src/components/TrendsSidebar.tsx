@@ -1,8 +1,8 @@
 import { validateRequest } from "@/auth";
+import { Skeleton } from "@/components/ui/skeleton";
 import prisma from "@/lib/prisma";
 import { getUserDataSelect } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -12,7 +12,15 @@ import UserProfile from "./UserProfile";
 export default function TrendsSidebar() {
 	return (
 		<div className="sticky top-[5.25rem] hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80">
-			<Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
+			<Suspense
+				fallback={
+					<Skeleton
+						role="status"
+						aria-label="Loading suggestions and trends"
+						className="h-48 rounded-lg"
+					/>
+				}
+			>
 				<Follow />
 				<TrendingTopics />
 			</Suspense>
