@@ -1,3 +1,34 @@
 {
-  "prisma.pinToPrisma6": true
+	"prisma.pinToPrisma6": false,
+	"cSpell.words": [
+		"dvh",
+		"dvw",
+		"Geist",
+		"Tiptap",
+		"UploadThing",
+		"utfs",
+		"yusuprd"
+	],
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.formatOnSave": true,
+	"files.associations": {
+		"*.css": "tailwindcss"
+	},
+	"tailwindCSS.experimental.configFile": "src/app/globals.css",
+	"json.schemaDownload.trustedDomains": {
+		"https://ui.shadcn.com/schema.json": true
+	},
+	"editor.codeActionsOnSave": {
+		"source.organizeImports": "explicit",
+		"source.removeUnusedImports": "explicit",
+		"source.fixAll.eslint": "explicit"
+	},
+	"cSpell.ignorePaths": [
+		"node_modules",
+		".next",
+		"src/generated",
+		"package-lock.json",
+		".git"
+	],
+	"prettier.documentSelectors": ["**/*.css"]
 }

@@ -1,5 +1,6 @@
 import { CommentData } from "@/lib/types";
-import { useDeleteCommentMutation } from "./mutations";
+import LoadingButton from "../LoadingButton";
+import { Button } from "../ui/button";
 import {
 	Dialog,
 	DialogContent,
@@ -8,8 +9,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "../ui/dialog";
-import LoadingButton from "../LoadingButton";
-import { Button } from "../ui/button";
+import { useDeleteCommentMutation } from "./mutations";
 
 interface DeleteCommentDialogProps {
 	comment: CommentData;

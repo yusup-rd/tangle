@@ -34,7 +34,7 @@ export function useUpdateProfileMutation() {
 			]);
 		},
 		onSuccess: async ([updatedUser, uploadResult]) => {
-            console.log("Upload Result:", uploadResult);
+			console.log("Upload Result:", uploadResult);
 			const newAvatarUrl = uploadResult?.[0].serverData.avatarUrl;
 
 			const queryFilter: QueryFilters = {

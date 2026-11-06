@@ -1,6 +1,6 @@
 import { deleteComment, submitComment } from "@/components/comments/actions";
 import { useToast } from "@/components/ui/use-toast";
-import { CommentData, CommentPage } from "@/lib/types";
+import { CommentPage } from "@/lib/types";
 import {
 	InfiniteData,
 	QueryKey,

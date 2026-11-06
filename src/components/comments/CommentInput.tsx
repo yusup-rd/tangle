@@ -1,9 +1,9 @@
 import { PostData } from "@/lib/types";
-import { useState } from "react";
-import { useSubmitCommentMutation } from "./mutations";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { Loader2, SendHorizonal } from "lucide-react";
+import { useState } from "react";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { useSubmitCommentMutation } from "./mutations";
 
 interface CommentInputProps {
 	post: PostData;
