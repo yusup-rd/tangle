@@ -34,6 +34,19 @@
 	--str-chat__skeleton-loading-highlight: hsl(var(--accent));
 }
 
+.tangle-chat
+	:is(
+		.str-chat__message-actions-box-button,
+		.str-chat__message-reactions-button,
+		.str-chat__message-reactions__list-button,
+		.str-chat__message-reactions__list-item-button
+	) {
+	--str-chat__background-utility-pressed: hsl(var(--foreground) / 0.14);
+	--str-chat__background-utility-selected: var(
+		--str-chat__background-utility-pressed
+	);
+}
+
 /* Tangle controls which pane is visible on narrow screens. */
 .tangle-chat .str-chat__channel-list {
 	position: relative;
