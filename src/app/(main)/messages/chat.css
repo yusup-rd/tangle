@@ -16,7 +16,7 @@
 	--str-chat__background-core-surface-card: hsl(var(--card));
 	--str-chat__background-core-surface-subtle: hsl(var(--muted));
 	--str-chat__background-core-surface-strong: hsl(var(--accent));
-	--str-chat__background-utility-hover: hsl(var(--muted));
+	--str-chat__background-utility-hover: hsl(var(--foreground) / 0.08);
 	--str-chat__background-utility-pressed: hsl(var(--accent));
 	--str-chat__background-utility-selected: hsl(var(--accent));
 	--str-chat__border-core-default: hsl(var(--border));
@@ -53,6 +53,37 @@
 .tangle-chat .str-chat__channel-header {
 	flex: 1;
 	min-width: 0;
+}
+
+.tangle-chat .str-chat__dialog-overlay {
+	z-index: 3;
+}
+
+.tangle-chat
+	.str-chat__message-reactions-detail
+	.str-chat__message-reactions-detail__user-list {
+	padding-block-end: var(--str-chat__size-16);
+}
+
+.tangle-chat
+	.str-chat__message-reactions-detail
+	.str-chat__message-reactions-detail__user-list-container::after {
+	pointer-events: none;
+}
+
+.tangle-chat
+	.str-chat__message-reactions-detail
+	.str-chat__message-reactions-detail__user-list
+	.str-chat__message-reactions-detail__user-list-item {
+	max-height: none;
+}
+
+@media (max-width: 47.999rem), (pointer: coarse) {
+	.tangle-chat
+		.str-chat
+		:is(input[type="text"], input[type="search"], textarea) {
+		font-size: max(16px, 1rem);
+	}
 }
 
 .tangle-chat
