@@ -36,6 +36,7 @@ export default function CommentInput({ post }: CommentInputProps) {
 			onSubmit={handleSubmit}
 		>
 			<Input
+				aria-label="Add a comment"
 				placeholder="Add a comment..."
 				value={input}
 				onChange={(e) => setInput(e.target.value)}
@@ -43,6 +44,7 @@ export default function CommentInput({ post }: CommentInputProps) {
 			/>
 			<Button
 				type="submit"
+				aria-label="Send comment"
 				variant="ghost"
 				size="icon"
 				disabled={!input.trim() || mutation.isPending}
@@ -50,7 +52,7 @@ export default function CommentInput({ post }: CommentInputProps) {
 				{!mutation.isPending ? (
 					<SendHorizonal />
 				) : (
-					<Loader2 className="animate-spin" />
+					<Loader2 className="motion-safe:animate-spin" />
 				)}
 			</Button>
 		</form>

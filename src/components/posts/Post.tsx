@@ -80,6 +80,7 @@ export default function Post({ post }: PostProps) {
 					/>
 					<CommentButton
 						post={post}
+						expanded={showComments}
 						onClick={() => setShowComments(!showComments)}
 					/>
 				</div>
@@ -150,16 +151,26 @@ function MediaPreview({ media }: MediaPreviewProps) {
 
 interface CommentButtonProps {
 	post: PostData;
+	expanded: boolean;
 	onClick: () => void;
 }
 
-function CommentButton({ post, onClick }: CommentButtonProps) {
+function CommentButton({ post, expanded, onClick }: CommentButtonProps) {
+	const count = post._count.comments;
 	return (
-		<button onClick={onClick} className="flex items-center gap-2">
-			<MessageSquare className="size-5" />
+		<button
+			type="button"
+			aria-label={`${count} ${count === 1 ? "comment" : "comments"}`}
+			aria-expanded={expanded}
+			onClick={onClick}
+			className="flex min-h-9 items-center gap-2"
+		>
+			<MessageSquare className="size-5" aria-hidden="true" />
 			<span className="text-sm font-medium tabular-nums">
-				{post._count.comments}{" "}
-				<span className="hidden sm:inline">comments</span>
+				{count}{" "}
+				<span className="hidden sm:inline">
+					{count === 1 ? "comment" : "comments"}
+				</span>
 			</span>
 		</button>
 	);
