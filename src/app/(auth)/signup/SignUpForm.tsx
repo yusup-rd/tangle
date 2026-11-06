@@ -11,6 +11,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import useHydrated from "@/hooks/useHydrated";
 import { signUpSchema, SignUpValues } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
@@ -18,6 +19,7 @@ import { useForm } from "react-hook-form";
 import { signUp } from "./actions";
 
 export default function SignUpForm() {
+	const hydrated = useHydrated();
 	const [error, setError] = useState<string>();
 
 	const [isPending, startTransition] = useTransition();
@@ -41,7 +43,12 @@ export default function SignUpForm() {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+			<form
+				method="post"
+				noValidate
+				onSubmit={form.handleSubmit(onSubmit)}
+				className="space-y-3"
+			>
 				{error && (
 					<p role="alert" className="text-center text-destructive">
 						{error}
@@ -57,6 +64,7 @@ export default function SignUpForm() {
 								<Input
 									placeholder="Username"
 									autoComplete="username"
+									disabled={!hydrated}
 									{...field}
 								/>
 							</FormControl>
@@ -75,6 +83,7 @@ export default function SignUpForm() {
 									placeholder="Email"
 									type="email"
 									autoComplete="email"
+									disabled={!hydrated}
 									{...field}
 								/>
 							</FormControl>
@@ -92,6 +101,7 @@ export default function SignUpForm() {
 								<PasswordInput
 									placeholder="Password"
 									autoComplete="new-password"
+									disabled={!hydrated}
 									{...field}
 								/>
 							</FormControl>
@@ -101,11 +111,17 @@ export default function SignUpForm() {
 				/>
 				<LoadingButton
 					loading={isPending}
+					disabled={!hydrated}
 					type="submit"
 					className="w-full"
 				>
 					Create Account
 				</LoadingButton>
+				<noscript>
+					<p className="text-sm text-muted-foreground">
+						Enable JavaScript to use this form.
+					</p>
+				</noscript>
 			</form>
 		</Form>
 	);
