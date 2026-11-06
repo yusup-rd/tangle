@@ -129,7 +129,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
 				alt="Attachment"
 				width={500}
 				height={500}
-				className="mx-auto size-fit max-h-[30rem] rounded-lg"
+				className="mx-auto size-fit max-h-120 rounded-lg"
 			/>
 		);
 	}
@@ -140,7 +140,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
 				<video
 					src={media.url}
 					controls
-					className="mx-auto size-fit max-h-[30rem] rounded-lg"
+					className="mx-auto size-fit max-h-120 rounded-lg"
 				/>
 			</div>
 		);

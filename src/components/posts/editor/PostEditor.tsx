@@ -243,10 +243,10 @@ function AttachmentPreview({
 					alt="Attachment preview"
 					width={500}
 					height={500}
-					className="size-fit max-h-[30rem] rounded-lg"
+					className="size-fit max-h-120 rounded-lg"
 				/>
 			) : (
-				<video controls className="size-fit max-h-[30rem] rounded-lg">
+				<video controls className="size-fit max-h-120 rounded-lg">
 					<source src={previewUrl} type={file.type} />
 				</video>
 			)}

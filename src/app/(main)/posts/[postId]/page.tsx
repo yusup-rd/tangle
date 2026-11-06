@@ -63,7 +63,7 @@ export default async function Page({ params }: PageProps) {
 			<div className="w-full min-w-0 space-y-5">
 				<Post post={post} />
 			</div>
-			<div className="sticky top-[5.25rem] hidden h-fit w-80 flex-none lg:block">
+			<div className="sticky top-21 hidden h-fit w-80 flex-none lg:block">
 				<Suspense
 					fallback={
 						<Skeleton
