@@ -52,7 +52,7 @@ export default function Chat() {
 					className="size-5 motion-safe:animate-spin"
 					aria-hidden="true"
 				/>
-				Connecting to messages�
+				Connecting to messages...
 			</div>
 		);
 	}

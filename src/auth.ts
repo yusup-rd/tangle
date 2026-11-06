@@ -31,6 +31,8 @@ export const startSession = async (userId: string) => {
 			expiresAt: new Date(Date.now() + sessionLifetime),
 		},
 	});
+	// Preserve the browser-session cookie used by Lucia. The database expiry
+	// limits and renews the session independently of the browser cookie.
 	(await cookies()).set(sessionCookieName, token, cookieOptions);
 };
 

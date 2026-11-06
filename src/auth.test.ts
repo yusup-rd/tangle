@@ -30,7 +30,7 @@ describe("authentication sessions", () => {
 	});
 	afterEach(() => vi.useRealTimers());
 
-	it("stores the token hash and puts the raw token in an HttpOnly cookie", async () => {
+	it("stores the token hash and issues an HttpOnly browser-session cookie", async () => {
 		await startSession(user.id);
 		const [name, token, options] = store.set.mock.calls[0];
 		expect(name).toBe("auth_session");
@@ -39,6 +39,8 @@ describe("authentication sessions", () => {
 			sameSite: "lax",
 			path: "/",
 		});
+		expect(options).not.toHaveProperty("maxAge");
+		expect(options).not.toHaveProperty("expires");
 		expect(sessions.create).toHaveBeenCalledWith({
 			data: {
 				id: createHash("sha256").update(token).digest("hex"),
