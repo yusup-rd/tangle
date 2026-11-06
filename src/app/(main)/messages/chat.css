@@ -55,7 +55,10 @@
 	min-width: 0;
 }
 
-.tangle-chat .str-chat__quoted-message-preview__author {
+.tangle-chat
+	.str-chat
+	.str-chat__quoted-message-preview
+	.str-chat__quoted-message-preview__content
+	.str-chat__quoted-message-preview__author {
 	overflow: clip;
-	text-overflow: ellipsis;
 }
