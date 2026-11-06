@@ -60,6 +60,7 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
 			<WithComponents
 				overrides={{
 					ChannelListItemUI: ChannelPreviewCustom,
+					LoadingErrorIndicator: ConversationListError,
 					LoadingIndicator: ConversationListSkeleton,
 				}}
 			>
@@ -76,6 +77,23 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
 		</div>
 	);
 }
+
+const ConversationListError = () => {
+	return (
+		<div className="flex flex-col items-start gap-3 p-3">
+			<p role="alert" className="text-sm text-muted-foreground">
+				Conversations couldn’t load.
+			</p>
+			<Button
+				variant="outline"
+				size="sm"
+				onClick={() => window.location.reload()}
+			>
+				Try again
+			</Button>
+		</div>
+	);
+};
 
 interface MenuHeaderProps {
 	onClose: () => void;
