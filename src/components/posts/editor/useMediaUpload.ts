@@ -33,7 +33,14 @@ export default function useMediaUpload() {
 	}
 
 	async function startUpload(files: File[]) {
-		if (!files.length || activeUpload.current) return;
+		if (!files.length) return;
+		if (activeUpload.current) {
+			toast({
+				variant: "destructive",
+				description: "Another upload is in progress.",
+			});
+			return;
+		}
 
 		if (previewUrls.current.size + files.length > 5) {
 			toast({
@@ -121,11 +128,11 @@ export default function useMediaUpload() {
 				});
 			}
 		} catch (error) {
-			if (controller.signal.aborted && !callbackTimedOut) return;
 			for (const name of batchNames) releasePreview(name);
 			setAttachments((previous) =>
 				previous.filter(({ file }) => !batchNames.has(file.name)),
 			);
+			if (controller.signal.aborted && !callbackTimedOut) return;
 			toast({
 				variant: "destructive",
 				description: callbackTimedOut

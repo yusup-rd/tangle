@@ -44,6 +44,7 @@ export default function useInitializeChatClient() {
 
 		return () => {
 			cancelled = true;
+			setChatClient((current) => (current === client ? null : current));
 			void client.disconnectUser().catch((error) => {
 				console.error("Failed to disconnect from Stream Chat", error);
 			});
