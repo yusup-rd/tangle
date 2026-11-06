@@ -54,7 +54,8 @@ describe("signUpSchema", () => {
 describe("loginSchema", () => {
 	it("accepts non-empty username and password", () => {
 		expect(
-			loginSchema.safeParse({ username: "user", password: "secret" }).success,
+			loginSchema.safeParse({ username: "user", password: "secret" })
+				.success,
 		).toBe(true);
 	});
 
@@ -89,7 +90,8 @@ describe("createPostSchema", () => {
 
 	it("rejects empty content", () => {
 		expect(
-			createPostSchema.safeParse({ content: "   ", mediaIds: [] }).success,
+			createPostSchema.safeParse({ content: "   ", mediaIds: [] })
+				.success,
 		).toBe(false);
 	});
 });
@@ -116,9 +118,9 @@ describe("updateUserProfileSchema", () => {
 
 describe("createCommentSchema", () => {
 	it("accepts non-empty comment content", () => {
-		expect(createCommentSchema.safeParse({ content: "Nice post!" }).success).toBe(
-			true,
-		);
+		expect(
+			createCommentSchema.safeParse({ content: "Nice post!" }).success,
+		).toBe(true);
 	});
 
 	it("rejects empty comment content", () => {
