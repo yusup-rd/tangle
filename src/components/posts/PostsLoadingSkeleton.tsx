@@ -2,7 +2,11 @@ import { Skeleton } from "../ui/skeleton";
 
 export default function PostsLoadingSkeleton() {
 	return (
-		<div role="status" aria-label="Loading posts" className="space-y-5">
+		<div
+			role="status"
+			aria-label="Loading posts"
+			className="w-full space-y-5"
+		>
 			<PostLoadingSkeleton />
 			<PostLoadingSkeleton />
 			<PostLoadingSkeleton />

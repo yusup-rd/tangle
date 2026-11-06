@@ -9,18 +9,31 @@ import { Suspense } from "react";
 import FollowButton from "./FollowButton";
 import UserProfile from "./UserProfile";
 
+const sidebarClassName =
+	"sticky top-21 hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80";
+
+const TrendsPanelSkeleton = () => {
+	return (
+		<Skeleton
+			role="status"
+			aria-label="Loading suggestions and trends"
+			className="h-48 rounded-lg"
+		/>
+	);
+};
+
+export const TrendsSidebarSkeleton = () => {
+	return (
+		<div className={sidebarClassName}>
+			<TrendsPanelSkeleton />
+		</div>
+	);
+};
+
 export default function TrendsSidebar() {
 	return (
-		<div className="sticky top-21 hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80">
-			<Suspense
-				fallback={
-					<Skeleton
-						role="status"
-						aria-label="Loading suggestions and trends"
-						className="h-48 rounded-lg"
-					/>
-				}
-			>
+		<div className={sidebarClassName}>
+			<Suspense fallback={<TrendsPanelSkeleton />}>
 				<Follow />
 				<TrendingTopics />
 			</Suspense>
@@ -32,20 +45,25 @@ export default function TrendsSidebar() {
 
 		if (!user) return null;
 
-		const usersToFollow = await prisma.user.findMany({
-			where: {
-				NOT: {
-					id: user?.id,
-				},
-				followers: {
-					none: {
-						followerId: user.id,
+		const usersToFollow = await prisma.user
+			.findMany({
+				where: {
+					NOT: {
+						id: user.id,
+					},
+					followers: {
+						none: {
+							followerId: user.id,
+						},
 					},
 				},
-			},
-			select: getUserDataSelect(user.id),
-			take: 5,
-		});
+				select: getUserDataSelect(user.id),
+				take: 5,
+			})
+			.catch(() => {
+				console.error("Could not load follow suggestions");
+				return [];
+			});
 
 		if (!usersToFollow.length) return null;
 
@@ -118,7 +136,10 @@ const getTrendingTopics = unstable_cache(
 );
 
 async function TrendingTopics() {
-	const trendingTopics = await getTrendingTopics();
+	const trendingTopics = await getTrendingTopics().catch(() => {
+		console.error("Could not load trending topics");
+		return [];
+	});
 	if (!trendingTopics.length) return null;
 
 	return (

@@ -14,12 +14,17 @@ interface MenuBarProps {
 
 const getUnreadCounts = cache((userId: string) =>
 	Promise.all([
-		prisma.notification.count({
-			where: {
-				recipientId: userId,
-				read: false,
-			},
-		}),
+		prisma.notification
+			.count({
+				where: {
+					recipientId: userId,
+					read: false,
+				},
+			})
+			.catch(() => {
+				console.error("Could not load unread notification count");
+				return 0;
+			}),
 		streamServerClient.getUnreadCount(userId).then(
 			(result) => result.total_unread_count,
 			() => {
