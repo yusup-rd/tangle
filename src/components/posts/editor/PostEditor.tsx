@@ -9,7 +9,7 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { useDropzone } from "@uploadthing/react";
-import { ImageIcon, X } from "lucide-react";
+import { ImageIcon, Loader2, X } from "lucide-react";
 import Image from "next/image";
 import { ClipboardEvent, useRef } from "react";
 import { useSubmitPostMutation } from "./mutations";
@@ -123,8 +123,12 @@ export default function PostEditor() {
 				{uploadProgress !== undefined && (
 					<span
 						role="status"
-						className="text-sm text-muted-foreground"
+						className="flex items-center gap-2 text-sm text-muted-foreground"
 					>
+						<Loader2
+							aria-hidden="true"
+							className="size-5 text-primary motion-safe:animate-spin"
+						/>
 						{uploadProgress === 100
 							? "Finishing upload…"
 							: `Uploading ${uploadProgress}%`}
