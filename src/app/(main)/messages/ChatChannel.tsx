@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Menu } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
+import { useCallback } from "react";
 import {
 	Channel,
 	ChannelHeader,
-	ChannelHeaderProps,
 	MessageComposer,
 	MessageList,
 	Window,
@@ -18,10 +18,30 @@ interface ChatChannelProps {
 }
 
 export default function ChatChannel({ open, openSidebar }: ChatChannelProps) {
+	const HeaderStartContent = useCallback(() => {
+		return (
+			<Button
+				size="icon"
+				variant="ghost"
+				className="size-11 md:hidden"
+				aria-label="Back to conversations"
+				onClick={openSidebar}
+			>
+				<ChevronLeft
+					className="size-5 rtl:rotate-180"
+					aria-hidden="true"
+				/>
+			</Button>
+		);
+	}, [openSidebar]);
+
 	return (
 		<div className={cn("min-w-0 flex-1 md:block", !open && "hidden")}>
 			<WithComponents
-				overrides={{ LoadingIndicator: MessageListSkeleton }}
+				overrides={{
+					HeaderStartContent,
+					LoadingIndicator: MessageListSkeleton,
+				}}
 			>
 				<Channel
 					EmptyPlaceholder={
@@ -40,37 +60,12 @@ export default function ChatChannel({ open, openSidebar }: ChatChannelProps) {
 					}
 				>
 					<Window>
-						<CustomChannelHeader openSidebar={openSidebar} />
+						<ChannelHeader />
 						<MessageList />
 						<MessageComposer />
 					</Window>
 				</Channel>
 			</WithComponents>
-		</div>
-	);
-}
-
-interface CustomChannelHeaderProps extends ChannelHeaderProps {
-	openSidebar: () => void;
-}
-
-function CustomChannelHeader({
-	openSidebar,
-	...props
-}: CustomChannelHeaderProps) {
-	return (
-		<div className="flex min-w-0 items-center">
-			<div className="shrink-0 p-2 md:hidden">
-				<Button
-					size="icon"
-					variant="ghost"
-					aria-label="Open conversations"
-					onClick={openSidebar}
-				>
-					<Menu className="size-5" />
-				</Button>
-			</div>
-			<ChannelHeader {...props} />
 		</div>
 	);
 }

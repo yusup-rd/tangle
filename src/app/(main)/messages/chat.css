@@ -65,9 +65,33 @@
 	padding-bottom: 0;
 }
 
+@media (width < 48rem) {
+	.tangle-chat .str-chat__channel-list-item {
+		--str-chat__background-utility-selected: var(
+			--str-chat__background-core-elevation-1
+		);
+	}
+}
+
 .tangle-chat .str-chat__channel-header {
-	flex: 1;
 	min-width: 0;
+	grid-template-columns:
+		minmax(var(--str-chat__size-48), 1fr) minmax(0, max-content)
+		minmax(var(--str-chat__size-48), 1fr);
+}
+
+.tangle-chat .str-chat__channel-header .str-chat__channel-header__data {
+	width: 100%;
+}
+
+.tangle-chat
+	.str-chat__channel-header
+	:is(
+		.str-chat__channel-header__data__title,
+		.str-chat__channel-header__data__subtitle
+	) {
+	max-width: 100%;
+	overflow: hidden;
 }
 
 .tangle-chat .str-chat__dialog-overlay {
