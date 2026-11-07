@@ -1,6 +1,6 @@
-import Image from "next/image";
 import profilePlaceholder from "@/assets/profile-placeholder.png";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 interface UserProfileProps {
 	avatarUrl: string | null | undefined;

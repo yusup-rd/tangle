@@ -1,6 +1,7 @@
 import { validateRequest } from "@/auth";
 import prisma from "@/lib/prisma";
 import streamServerClient from "@/lib/stream";
+import { getUploadThingFileKey } from "@/lib/uploadthing-files";
 import { createUploadthing, FileRouter } from "uploadthing/next";
 import { UploadThingError, UTApi } from "uploadthing/server";
 
@@ -13,40 +14,43 @@ export const fileRouter = {
 		.middleware(async () => {
 			const { user } = await validateRequest();
 
-			if (!user) throw new UploadThingError("Unauthorized");
+			if (!user)
+				throw new UploadThingError({
+					code: "FORBIDDEN",
+					message: "Unauthorized",
+				});
 
 			return { user };
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
 			const oldAvatarUrl = metadata.user.avatarUrl;
 
-			if (oldAvatarUrl) {
-				const key = oldAvatarUrl.split(
-					`/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-				)[1];
-
-				await new UTApi().deleteFiles(key);
-			}
-
-			const newAvatarUrl = file.url.replace(
-				"/f/",
-				`/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-			);
-
-			await Promise.all([
-				prisma.user.update({
-					where: { id: metadata.user.id },
-					data: {
-						avatarUrl: newAvatarUrl,
-					},
-				}),
-				streamServerClient.partialUpdateUser({
+			const newAvatarUrl = file.ufsUrl;
+			await prisma.user.update({
+				where: { id: metadata.user.id },
+				data: { avatarUrl: newAvatarUrl },
+			});
+			await streamServerClient
+				.partialUpdateUser({
 					id: metadata.user.id,
-					set: {
-						image: newAvatarUrl,
-					},
-				}),
-			]);
+					set: { image: newAvatarUrl },
+				})
+				.catch((error) => {
+					console.error(
+						"Could not sync the avatar to Stream Chat",
+						error,
+					);
+				});
+
+			const oldKey = oldAvatarUrl && getUploadThingFileKey(oldAvatarUrl);
+			if (oldKey && oldKey !== file.key) {
+				await new UTApi().deleteFiles(oldKey).catch((error) => {
+					console.error(
+						"Could not delete the previous avatar",
+						error,
+					);
+				});
+			}
 
 			return { avatarUrl: newAvatarUrl };
 		}),
@@ -57,17 +61,18 @@ export const fileRouter = {
 		.middleware(async () => {
 			const { user } = await validateRequest();
 
-			if (!user) throw new UploadThingError("Unauthorized");
+			if (!user)
+				throw new UploadThingError({
+					code: "FORBIDDEN",
+					message: "Unauthorized",
+				});
 
 			return {};
 		})
 		.onUploadComplete(async ({ file }) => {
 			const media = await prisma.media.create({
 				data: {
-					url: file.url.replace(
-						"/f/",
-						`/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/`,
-					),
+					url: file.ufsUrl,
 					type: file.type.startsWith("image") ? "IMAGE" : "VIDEO",
 				},
 			});

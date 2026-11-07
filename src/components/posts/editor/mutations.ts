@@ -1,4 +1,6 @@
+import { useSession } from "@/app/(main)/SessionProvider";
 import { useToast } from "@/components/ui/use-toast";
+import { PostPage } from "@/lib/types";
 import {
 	InfiniteData,
 	QueryFilters,
@@ -6,8 +8,6 @@ import {
 	useQueryClient,
 } from "@tanstack/react-query";
 import { submitPost } from "./actions";
-import { PostPage } from "@/lib/types";
-import { useSession } from "@/app/(main)/SessionProvider";
 
 export function useSubmitPostMutation() {
 	const { toast } = useToast();

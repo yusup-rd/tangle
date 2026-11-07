@@ -1,18 +1,39 @@
 import { validateRequest } from "@/auth";
+import { Skeleton } from "@/components/ui/skeleton";
 import prisma from "@/lib/prisma";
-import { Loader2 } from "lucide-react";
+import { getUserDataSelect } from "@/lib/types";
+import { formatNumber } from "@/lib/utils";
+import { unstable_cache } from "next/cache";
 import Link from "next/link";
 import { Suspense } from "react";
-import UserProfile from "./UserProfile";
-import { unstable_cache } from "next/cache";
-import { formatNumber } from "@/lib/utils";
 import FollowButton from "./FollowButton";
-import { getUserDataSelect } from "@/lib/types";
+import UserProfile from "./UserProfile";
+
+const sidebarClassName =
+	"sticky top-21 hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80";
+
+const TrendsPanelSkeleton = () => {
+	return (
+		<Skeleton
+			role="status"
+			aria-label="Loading suggestions and trends"
+			className="h-48 rounded-lg"
+		/>
+	);
+};
+
+export const TrendsSidebarSkeleton = () => {
+	return (
+		<div className={sidebarClassName}>
+			<TrendsPanelSkeleton />
+		</div>
+	);
+};
 
 export default function TrendsSidebar() {
 	return (
-		<div className="sticky top-[5.25rem] hidden h-fit w-72 flex-none space-y-5 md:block lg:w-80">
-			<Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
+		<div className={sidebarClassName}>
+			<Suspense fallback={<TrendsPanelSkeleton />}>
 				<Follow />
 				<TrendingTopics />
 			</Suspense>
@@ -24,20 +45,27 @@ export default function TrendsSidebar() {
 
 		if (!user) return null;
 
-		const usersToFollow = await prisma.user.findMany({
-			where: {
-				NOT: {
-					id: user?.id,
-				},
-				followers: {
-					none: {
-						followerId: user.id,
+		const usersToFollow = await prisma.user
+			.findMany({
+				where: {
+					NOT: {
+						id: user.id,
+					},
+					followers: {
+						none: {
+							followerId: user.id,
+						},
 					},
 				},
-			},
-			select: getUserDataSelect(user.id),
-			take: 5,
-		});
+				select: getUserDataSelect(user.id),
+				take: 5,
+			})
+			.catch(() => {
+				console.error("Could not load follow suggestions");
+				return [];
+			});
+
+		if (!usersToFollow.length) return null;
 
 		return (
 			<div className="space-y-5 rounded-lg bg-card p-5 shadow-sm">
@@ -56,7 +84,7 @@ export default function TrendsSidebar() {
 								className="flex-none"
 							/>
 							<div>
-								<p className="line-clamp-1 break-all font-semibold hover:underline">
+								<p className="line-clamp-1 font-semibold break-all hover:underline">
 									{user.displayName}
 								</p>
 								<p className="line-clamp-1 break-all text-muted-foreground">
@@ -108,7 +136,11 @@ const getTrendingTopics = unstable_cache(
 );
 
 async function TrendingTopics() {
-	const trendingTopics = await getTrendingTopics();
+	const trendingTopics = await getTrendingTopics().catch(() => {
+		console.error("Could not load trending topics");
+		return [];
+	});
+	if (!trendingTopics.length) return null;
 
 	return (
 		<div className="space-y-5 rounded-lg bg-card p-5 shadow-sm">
@@ -123,7 +155,7 @@ async function TrendingTopics() {
 						className="block"
 					>
 						<p
-							className="line-clamp-1 break-all font-semibold hover:underline"
+							className="line-clamp-1 font-semibold break-all hover:underline"
 							title={hashtag}
 						>
 							{hashtag}

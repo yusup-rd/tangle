@@ -1,10 +1,8 @@
 import { CommentData } from "@/lib/types";
-import UserTooltip from "../UserTooltip";
+import { formatRelativeDate } from "@/lib/utils";
 import Link from "next/link";
 import UserProfile from "../UserProfile";
-import { formatRelativeDate } from "@/lib/utils";
-import { useSession } from "@/app/(main)/SessionProvider";
-import { Cpu } from "lucide-react";
+import UserTooltip from "../UserTooltip";
 import CommentMoreButton from "./CommentMoreButton";
 
 interface CommentProps {
@@ -12,8 +10,6 @@ interface CommentProps {
 }
 
 export default function Comment({ comment }: CommentProps) {
-	const { user } = useSession();
-
 	return (
 		<div className="group/comment flex gap-3 py-3">
 			<span className="hidden sm:inline">

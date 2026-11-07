@@ -1,19 +1,24 @@
+const uploadThingAppId = process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID;
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	experimental: {
-		staleTimes: {
-			dynamic: 30,
-		},
-	},
+	experimental: { staleTimes: { dynamic: 30 } },
 	serverExternalPackages: ["@node-rs/argon2"],
 	images: {
-		remotePatterns: [
-			{
-				protocol: "https",
-				hostname: "utfs.io",
-				pathname: `/a/${process.env.NEXT_PUBLIC_UPLOADTHING_APP_ID}/*`,
-			},
-		],
+		remotePatterns: uploadThingAppId
+			? [
+					{
+						protocol: "https",
+						hostname: "utfs.io",
+						pathname: `/a/${uploadThingAppId}/*`,
+					},
+					{
+						protocol: "https",
+						hostname: `${uploadThingAppId}.ufs.sh`,
+						pathname: "/f/*",
+					},
+				]
+			: [],
 	},
 	rewrites: async () => [
 		{

@@ -2,7 +2,11 @@ import { Skeleton } from "../ui/skeleton";
 
 export default function PostsLoadingSkeleton() {
 	return (
-		<div className="space-y-5">
+		<div
+			role="status"
+			aria-label="Loading posts"
+			className="w-full space-y-5"
+		>
 			<PostLoadingSkeleton />
 			<PostLoadingSkeleton />
 			<PostLoadingSkeleton />
@@ -10,9 +14,9 @@ export default function PostsLoadingSkeleton() {
 	);
 }
 
-function PostLoadingSkeleton() {
+export const PostLoadingSkeleton = () => {
 	return (
-		<div className="w-full animate-pulse space-y-3 rounded-lg bg-card p-5 shadow-sm">
+		<div className="w-full space-y-3 rounded-lg bg-card p-5 shadow-sm">
 			<div className="flex flex-wrap gap-3">
 				<Skeleton className="size-12 rounded-full" />
 				<div className="space-y-1.5">
@@ -23,4 +27,4 @@ function PostLoadingSkeleton() {
 			<Skeleton className="h-16 rounded" />
 		</div>
 	);
-}
+};

@@ -2,6 +2,7 @@
 
 import InfiniteScrollContainer from "@/components/InfiniteScrollContainer";
 import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 import kyInstance from "@/lib/ky";
 import { NotificationPage } from "@/lib/types";
 import {
@@ -9,9 +10,8 @@ import {
 	useMutation,
 	useQueryClient,
 } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
-import Notification from "./Notification";
 import { useEffect } from "react";
+import Notification from "./Notification";
 
 export default function Notifications() {
 	const {
@@ -89,7 +89,11 @@ export default function Notifications() {
 				/>
 			))}
 			{isFetchingNextPage && (
-				<Loader2 className="mx-auto my-3 animate-spin" />
+				<Skeleton
+					role="status"
+					aria-label="Loading more notifications"
+					className="h-20 w-full"
+				/>
 			)}
 		</InfiniteScrollContainer>
 	);

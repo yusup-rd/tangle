@@ -1,5 +1,15 @@
-import { Loader2 } from "lucide-react";
+import PostsLoadingSkeleton from "@/components/posts/PostsLoadingSkeleton";
+import { TrendsSidebarSkeleton } from "@/components/TrendsSidebar";
 
-export default function Loading() {
-	return <Loader2 className="mx-auto my-3 animate-spin" />;
-}
+const Loading = () => {
+	return (
+		<main className="flex w-full min-w-0 gap-5">
+			<div className="min-w-0 flex-1">
+				<PostsLoadingSkeleton />
+			</div>
+			<TrendsSidebarSkeleton />
+		</main>
+	);
+};
+
+export default Loading;

@@ -1,107 +1,171 @@
 import { useToast } from "@/components/ui/use-toast";
-import { useUploadThing } from "@/lib/uploadthing";
-import { useState } from "react";
+import { uploadFiles } from "@/lib/uploadthing";
+import { useEffect, useRef, useState } from "react";
+
+const callbackTimeoutMs = 60_000;
 
 export interface Attachment {
 	file: File;
+	previewUrl: string;
 	mediaId?: string;
-	isUploading: boolean;
 }
 
 export default function useMediaUpload() {
 	const { toast } = useToast();
 	const [attachments, setAttachments] = useState<Attachment[]>([]);
 	const [uploadProgress, setUploadProgress] = useState<number>();
-	const { startUpload, isUploading } = useUploadThing("attachment", {
-		onBeforeUploadBegin(files) {
-			const renamedFiles = files.map((file) => {
-				const ext = file.name.split(".").pop();
+	const activeUpload = useRef<AbortController | null>(null);
+	const previewUrls = useRef(new Map<string, string>());
 
-				return new File(
-					[file],
-					`attachment_${crypto.randomUUID()}.${ext}`,
-					{
-						type: file.type,
-					},
-				);
-			});
+	useEffect(() => {
+		const urls = previewUrls.current;
+		return () => {
+			activeUpload.current?.abort();
+			for (const url of urls.values()) URL.revokeObjectURL(url);
+			urls.clear();
+		};
+	}, []);
 
-			setAttachments((prev) => [
-				...prev,
-				...renamedFiles.map((file) => ({
-					file,
-					isUploading: true,
-				})),
-			]);
+	function releasePreview(filename: string) {
+		const url = previewUrls.current.get(filename);
+		if (url) URL.revokeObjectURL(url);
+		previewUrls.current.delete(filename);
+	}
 
-			return renamedFiles;
-		},
-		onUploadProgress: setUploadProgress,
-		onClientUploadComplete(res) {
-			setAttachments((prev) =>
-				prev.map((attachment) => {
-					const uploadResult = res.find(
-						(result) => result.name === attachment.file.name,
-					);
-
-					if (!uploadResult) return attachment;
-
-					return {
-						...attachment,
-						mediaId: uploadResult.serverData.mediaId,
-						isUploading: false,
-					};
-				}),
-			);
-		},
-		onUploadError(e) {
-			setAttachments((prev) =>
-				prev.filter((attachment) => !attachment.isUploading),
-			);
-			toast({
-				variant: "destructive",
-				description: e.message,
-			});
-		},
-	});
-
-	function handleStartUpload(files: File[]) {
-		if (isUploading) {
+	async function startUpload(files: File[]) {
+		if (!files.length) return;
+		if (activeUpload.current) {
 			toast({
 				variant: "destructive",
 				description: "Another upload is in progress.",
 			});
-
 			return;
 		}
 
-		if (attachments.length + files.length > 5) {
+		if (previewUrls.current.size + files.length > 5) {
 			toast({
 				variant: "destructive",
 				description: "You can only upload up to 5 files.",
 			});
-
 			return;
 		}
 
-		startUpload(files);
+		const controller = new AbortController();
+		activeUpload.current = controller;
+		let callbackTimer: ReturnType<typeof setTimeout> | undefined;
+		let callbackTimedOut = false;
+		const batchNames = new Set<string>();
+
+		try {
+			const batch = files.map((original) => {
+				const extension = original.name.match(/\.[^.]+$/)?.[0] ?? "";
+				const file = new File(
+					[original],
+					`attachment_${crypto.randomUUID()}${extension}`,
+					{ type: original.type },
+				);
+				const previewUrl = URL.createObjectURL(file);
+				batchNames.add(file.name);
+				previewUrls.current.set(file.name, previewUrl);
+				return { file, previewUrl };
+			});
+			const totalBytes = batch.reduce(
+				(total, { file }) => total + file.size,
+				0,
+			);
+			const uploadedBytesByFile = new Map<File, number>();
+			setAttachments((previous) => [...previous, ...batch]);
+			setUploadProgress(0);
+
+			const results = await uploadFiles("attachment", {
+				files: batch.map(({ file }) => file),
+				signal: controller.signal,
+				onUploadProgress: ({ file, loaded }) => {
+					uploadedBytesByFile.set(file, Math.min(file.size, loaded));
+					const uploadedBytes = [
+						...uploadedBytesByFile.values(),
+					].reduce((total, bytes) => total + bytes, 0);
+					setUploadProgress(
+						Math.floor((uploadedBytes / (totalBytes || 1)) * 100),
+					);
+					if (
+						uploadedBytes < totalBytes ||
+						callbackTimer !== undefined
+					)
+						return;
+					callbackTimer = setTimeout(() => {
+						callbackTimedOut = true;
+						controller.abort();
+					}, callbackTimeoutMs);
+				},
+			});
+
+			const mediaIds = new Map<string, string>();
+			for (const { name, serverData } of results) {
+				if (
+					typeof serverData?.mediaId === "string" &&
+					serverData.mediaId
+				) {
+					mediaIds.set(name, serverData.mediaId);
+				}
+			}
+
+			for (const name of batchNames) {
+				if (!mediaIds.has(name)) releasePreview(name);
+			}
+			setAttachments((previous) =>
+				previous.flatMap((attachment) => {
+					const name = attachment.file.name;
+					if (!batchNames.has(name)) return [attachment];
+					const mediaId = mediaIds.get(name);
+					return mediaId ? [{ ...attachment, mediaId }] : [];
+				}),
+			);
+			if (batch.some(({ file }) => !mediaIds.has(file.name))) {
+				toast({
+					variant: "destructive",
+					description:
+						"Some attachments could not be saved. Please try again.",
+				});
+			}
+		} catch (error) {
+			for (const name of batchNames) releasePreview(name);
+			setAttachments((previous) =>
+				previous.filter(({ file }) => !batchNames.has(file.name)),
+			);
+			if (controller.signal.aborted && !callbackTimedOut) return;
+			toast({
+				variant: "destructive",
+				description: callbackTimedOut
+					? "The upload took too long to finish. Please try again."
+					: error instanceof Error
+						? error.message
+						: "The upload failed. Please try again.",
+			});
+		} finally {
+			clearTimeout(callbackTimer);
+			activeUpload.current = null;
+			setUploadProgress(undefined);
+		}
 	}
 
 	function removeAttachment(filename: string) {
-		setAttachments((prev) =>
-			prev.filter((attachment) => attachment.file.name !== filename),
+		releasePreview(filename);
+		setAttachments((previous) =>
+			previous.filter(({ file }) => file.name !== filename),
 		);
 	}
 
 	function reset() {
+		for (const filename of previewUrls.current.keys())
+			releasePreview(filename);
 		setAttachments([]);
-		setUploadProgress(undefined);
 	}
 
 	return {
-		startUpload: handleStartUpload,
+		startUpload,
 		attachments,
-		isUploading,
+		isUploading: uploadProgress !== undefined,
 		uploadProgress,
 		removeAttachment,
 		reset,

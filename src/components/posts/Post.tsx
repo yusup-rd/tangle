@@ -1,20 +1,20 @@
 "use client";
 
-import { PostData } from "@/lib/types";
-import Link from "next/link";
-import UserProfile from "../UserProfile";
-import { cn, formatRelativeDate } from "@/lib/utils";
 import { useSession } from "@/app/(main)/SessionProvider";
-import PostMoreButton from "./PostMoreButton";
-import Linkify from "../Linkify";
-import UserTooltip from "../UserTooltip";
-import { Media } from "@prisma/client";
-import Image from "next/image";
-import LikeButton from "./LikeButton";
-import BookmarkButton from "./BookmarkButton";
-import { useState } from "react";
-import { MessageSquare } from "lucide-react";
 import Comments from "@/components/comments/Comments";
+import type { Media } from "@/generated/prisma/browser";
+import { PostData } from "@/lib/types";
+import { cn, formatRelativeDate } from "@/lib/utils";
+import { MessageSquare } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useState } from "react";
+import Linkify from "../Linkify";
+import UserProfile from "../UserProfile";
+import UserTooltip from "../UserTooltip";
+import BookmarkButton from "./BookmarkButton";
+import LikeButton from "./LikeButton";
+import PostMoreButton from "./PostMoreButton";
 
 interface PostProps {
 	post: PostData;
@@ -59,7 +59,7 @@ export default function Post({ post }: PostProps) {
 				)}
 			</div>
 			<Linkify>
-				<div className="whitespace-pre-line break-words">
+				<div className="break-words whitespace-pre-line">
 					{post.content}
 				</div>
 			</Linkify>
@@ -80,6 +80,7 @@ export default function Post({ post }: PostProps) {
 					/>
 					<CommentButton
 						post={post}
+						expanded={showComments}
 						onClick={() => setShowComments(!showComments)}
 					/>
 				</div>
@@ -128,7 +129,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
 				alt="Attachment"
 				width={500}
 				height={500}
-				className="mx-auto size-fit max-h-[30rem] rounded-lg"
+				className="mx-auto size-fit max-h-120 rounded-lg"
 			/>
 		);
 	}
@@ -139,7 +140,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
 				<video
 					src={media.url}
 					controls
-					className="mx-auto size-fit max-h-[30rem] rounded-lg"
+					className="mx-auto size-fit max-h-120 rounded-lg"
 				/>
 			</div>
 		);
@@ -150,16 +151,26 @@ function MediaPreview({ media }: MediaPreviewProps) {
 
 interface CommentButtonProps {
 	post: PostData;
+	expanded: boolean;
 	onClick: () => void;
 }
 
-function CommentButton({ post, onClick }: CommentButtonProps) {
+function CommentButton({ post, expanded, onClick }: CommentButtonProps) {
+	const count = post._count.comments;
 	return (
-		<button onClick={onClick} className="flex items-center gap-2">
-			<MessageSquare className="size-5" />
+		<button
+			type="button"
+			aria-label={`${count} ${count === 1 ? "comment" : "comments"}`}
+			aria-expanded={expanded}
+			onClick={onClick}
+			className="flex min-h-9 items-center gap-2"
+		>
+			<MessageSquare className="size-5" aria-hidden="true" />
 			<span className="text-sm font-medium tabular-nums">
-				{post._count.comments}{" "}
-				<span className="hidden sm:inline">comments</span>
+				{count}{" "}
+				<span className="hidden sm:inline">
+					{count === 1 ? "comment" : "comments"}
+				</span>
 			</span>
 		</button>
 	);

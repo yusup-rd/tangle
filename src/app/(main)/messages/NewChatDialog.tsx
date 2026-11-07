@@ -6,14 +6,15 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/components/ui/use-toast";
 import UserProfile from "@/components/UserProfile";
 import useDebounce from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Check, Loader2, SearchIcon, X } from "lucide-react";
+import { Check, SearchIcon, X } from "lucide-react";
 import { useState } from "react";
 import { UserResponse } from "stream-chat";
-import { DefaultStreamChatGenerics, useChatContext } from "stream-chat-react";
+import { useChatContext } from "stream-chat-react";
 import { useSession } from "../SessionProvider";
 
 interface NewChatDialogProps {
@@ -34,17 +35,15 @@ export default function NewChatDialog({
 	const [searchInput, setSearchInput] = useState("");
 	const searchInputDebounced = useDebounce(searchInput);
 
-	const [selectedUsers, setSelectedUsers] = useState<
-		UserResponse<DefaultStreamChatGenerics>[]
-	>([]);
+	const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
 
-	const { data, isFetching, isError, isSuccess } = useQuery({
+	const { data, isPending, isError, isSuccess } = useQuery({
 		queryKey: ["stream-users", searchInputDebounced],
 		queryFn: async () =>
 			client.queryUsers(
 				{
-					id: { $ne: loggedInUser.id },
-					role: { $ne: "admin" },
+					$nor: [{ id: loggedInUser.id }],
+					role: { $in: ["user", "moderator"] },
 					...(searchInputDebounced
 						? {
 								$or: [
@@ -62,7 +61,7 @@ export default function NewChatDialog({
 							}
 						: {}),
 				},
-				{ name: 1, username: 1 },
+				[{ name: 1 }, { username: 1 }],
 				{ limit: 15 },
 			),
 	});
@@ -78,8 +77,8 @@ export default function NewChatDialog({
 							selectedUsers.map((u) => u.name).join(", ")
 						: undefined,
 			});
-			await channel.create();
-            
+			await channel.watch();
+
 			return channel;
 		},
 		onSuccess: (channel) => {
@@ -103,10 +102,11 @@ export default function NewChatDialog({
 				</DialogHeader>
 				<div>
 					<div className="group relative">
-						<SearchIcon className="absolute left-5 top-1/2 size-5 -translate-y-1/2 transform text-muted-foreground group-focus-within:text-primary" />
+						<SearchIcon className="absolute top-1/2 left-5 size-5 -translate-y-1/2 transform text-muted-foreground group-focus-within:text-primary" />
 						<input
 							placeholder="Search users..."
-							className="h-12 w-full pe-4 ps-14 focus:outline-none"
+							aria-label="Search users"
+							className="h-12 w-full ps-14 pe-4 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
 							value={searchInput}
 							onChange={(e) => setSearchInput(e.target.value)}
 						/>
@@ -129,7 +129,7 @@ export default function NewChatDialog({
 						</div>
 					)}
 					<hr />
-					<div className="h-96 overflow-y-auto">
+					<div className="max-h-[min(24rem,45dvh)] overflow-y-auto">
 						{isSuccess &&
 							data.users.map((user) => (
 								<UserResult
@@ -154,8 +154,16 @@ export default function NewChatDialog({
 								No users found. Try a different name.
 							</p>
 						)}
-						{isFetching && (
-							<Loader2 className="mx-auto my-3 animate-spin" />
+						{isPending && (
+							<div
+								role="status"
+								aria-label="Loading users"
+								className="space-y-3 p-4"
+							>
+								<Skeleton className="h-10" />
+								<Skeleton className="h-10" />
+								<Skeleton className="h-10" />
+							</div>
 						)}
 						{isError && (
 							<p className="my-3 text-center text-destructive">
@@ -179,7 +187,7 @@ export default function NewChatDialog({
 }
 
 interface UserResultProps {
-	user: UserResponse<DefaultStreamChatGenerics>;
+	user: UserResponse;
 	selected: boolean;
 	onClick: () => void;
 }
@@ -187,6 +195,8 @@ interface UserResultProps {
 function UserResult({ user, selected, onClick }: UserResultProps) {
 	return (
 		<button
+			type="button"
+			aria-pressed={selected}
 			className="flex w-full items-center justify-between px-4 py-2.5 transition-colors hover:bg-muted/50"
 			onClick={onClick}
 		>
@@ -203,13 +213,15 @@ function UserResult({ user, selected, onClick }: UserResultProps) {
 }
 
 interface SelectedUserTagProps {
-	user: UserResponse<DefaultStreamChatGenerics>;
+	user: UserResponse;
 	onRemove: () => void;
 }
 
 function SelectedUserTag({ user, onRemove }: SelectedUserTagProps) {
 	return (
 		<button
+			type="button"
+			aria-label={`Remove ${user.name ?? user.id}`}
 			onClick={onRemove}
 			className="flex items-center gap-2 rounded-full border p-1 hover:bg-muted/50"
 		>

@@ -1,38 +1,87 @@
-# Tangle Social Media App
+<h1 align="center">Tangle</h1>
 
-Tangle is a modern, full-featured social media platform built with Next.js 15 and an array of powerful technologies. It provides a rich user experience, optimized performance, and real-time interactivity.
+<p align="center">A social app for sharing updates, following people, and starting conversations.</p>
 
-[Live App](https://tangle-app.vercel.app/)
+<p align="center">
+  <a href="https://tangle.yusuprd.com"><strong>Open Tangle</strong></a>
+  · <a href="#how-it-works">How it works</a>
+  · <a href="#local-development">Local development</a>
+  · <a href="#project-checks">Project checks</a>
+</p>
 
-## Features
+## What you can do
 
-- **User Authentication**: Secure username/password authentication with Google OAuth2 (Lucia).
-- **Dynamic Social Interactions**:
-  - Like, follow, comment, and bookmarking systems.
-  - Real-time notifications and a direct messaging system (powered by Stream).
-- **Content Creation**:
-  - Drag & drop and copy-paste support for media uploads (UploadThing).
-  - Tiptap editor for rich text editing.
-  - Supports hashtags, mentions, and full-text search.
-- **Advanced UI & UX**:
-  - Infinite scrolling feeds with optimistic updates for seamless experience.
-  - Mobile-responsive layout, dark/light/system themes with Tailwind CSS & Shadcn UI.
-  - Real-time form validation using React Hook Form and Zod.
-- **Server Actions**: Utilize Next.js server actions and components for high efficiency and seamless data fetching.
-- **Data Management**: 
-  - Postgres DB with Prisma ORM.
-  - TanStack React Query for advanced caching, data fetching, and revalidation.
-- **Media Management**: 
-  - User profile avatars with cropping and resizing.
-  - Cron job to delete orphaned uploads (Vercel).
+| Area          | In Tangle                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| Discover      | Browse the For You and Following feeds, search posts, and explore trending hashtags.       |
+| Publish       | Write posts with the Tiptap composer and attach photos or videos.                          |
+| Connect       | Follow people, edit your profile, like and comment on posts, and bookmark posts for later. |
+| Stay in touch | See activity notifications and start private or group conversations.                       |
 
----
+## How it works
 
-## Technologies Used
+Tangle runs on Vercel with the Next.js App Router, React, and TypeScript. The interface uses Tailwind CSS and Radix UI, and TanStack Query handles client-side fetching and caching.
 
-- **Frontend**: Next.js 15, Tailwind CSS, Shadcn UI components, TanStack React Query, React Hook Form, Zod, TipTap editor.
-- **Backend**: Next.js Server Actions and Server Components, Prisma ORM, Postgres DB.
-- **Authentication**: Lucia (username/password & Google OAuth2).
-- **Real-time Features**: Stream Chat for DM system.
-- **Media Handling**: UploadThing (drag & drop, copy-paste uploads).
-- **Hosting and Deployment**: Vercel with a custom cron job for periodic maintenance.
+```mermaid
+flowchart LR
+    browser["Browser"] -->|"Pages and requests"| app["Next.js on Vercel"]
+    app -->|"Prisma queries"| database[("PostgreSQL")]
+    app -->|"OAuth code exchange"| google["Google"]
+    app -->|"Authorize uploads"| uploads["UploadThing"]
+    uploads -->|"Upload callback"| app
+    app -->|"Issue chat tokens"| browser
+    browser -->|"Chat connection"| stream["Stream Chat"]
+```
+
+PostgreSQL stores accounts, sessions, and social activity. UploadThing stores media, and Stream Chat handles conversations and message delivery.
+
+### Publishing a post
+
+```mermaid
+flowchart LR
+    compose["Write a post"] --> attachments{"Add media?"}
+    attachments -->|"Yes"| upload["Upload attachments"]
+    attachments -->|"No"| publish["Publish post"]
+    upload --> publish
+    publish --> feed["Update feed"]
+```
+
+The server validates the session and post content before saving the post and linking any uploaded media in PostgreSQL.
+
+## Local development
+
+Use the Node.js version in [`.nvmrc`](.nvmrc) and install dependencies with `npm ci`. Copy [`.env.example`](.env.example) to `.env` and configure the development services.
+
+| Service      | What to configure                                                                                        |
+| ------------ | -------------------------------------------------------------------------------------------------------- |
+| PostgreSQL   | A pooled URL for app queries and a direct URL for Prisma CLI commands.                                   |
+| Google OAuth | A web client ID and secret. Register `http://localhost:3000/api/auth/callback/google` for local sign-in. |
+| UploadThing  | The development app ID and its v7 token.                                                                 |
+| Stream Chat  | The development app key and server secret.                                                               |
+
+For an empty development database, run `npx prisma db push` to create the schema. Then run `npm run dev` and open [localhost:3000](http://localhost:3000).
+
+## Project checks
+
+| Command                | Purpose                                                |
+| ---------------------- | ------------------------------------------------------ |
+| `npm run format:check` | Check formatting with Prettier.                        |
+| `npm run lint`         | Run ESLint.                                            |
+| `npm run typecheck`    | Generate Next.js route types and check TypeScript.     |
+| `npm test`             | Run the Vitest suite.                                  |
+| `npm run build`        | Build the production app.                              |
+| `npm run test:e2e`     | Run the Playwright suite against the production build. |
+
+For browser tests, run `npm run build` and `npx playwright install chromium` before `npm run test:e2e`. The suite uses desktop and mobile browser profiles and starts the app on port 3100.
+
+## Repository layout
+
+| Path                                           | Contents                                             |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| [`src/app/`](src/app)                          | App Router pages, layouts, and API routes.           |
+| [`src/components/`](src/components)            | Shared UI, the post composer, and post interactions. |
+| [`src/lib/`](src/lib)                          | Validation, service clients, and shared utilities.   |
+| [`prisma/schema.prisma`](prisma/schema.prisma) | PostgreSQL data model.                               |
+| [`e2e/`](e2e)                                  | Playwright browser tests.                            |
+
+See [`AGENTS.md`](AGENTS.md) for repository conventions and verification practices.

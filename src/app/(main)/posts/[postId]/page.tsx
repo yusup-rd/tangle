@@ -2,18 +2,18 @@ import { validateRequest } from "@/auth";
 import FollowButton from "@/components/FollowButton";
 import Linkify from "@/components/Linkify";
 import Post from "@/components/posts/Post";
+import { Skeleton } from "@/components/ui/skeleton";
 import UserProfile from "@/components/UserProfile";
 import UserTooltip from "@/components/UserTooltip";
 import prisma from "@/lib/prisma";
 import { getPostDataInclude, UserData } from "@/lib/types";
-import { Loader2 } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache, Suspense } from "react";
 
 interface PageProps {
-	params: { postId: string };
+	params: Promise<{ postId: string }>;
 }
 
 const getPost = cache(async (postId: string, loggedInUserId: string) => {
@@ -30,8 +30,9 @@ const getPost = cache(async (postId: string, loggedInUserId: string) => {
 });
 
 export async function generateMetadata({
-	params: { postId },
+	params,
 }: PageProps): Promise<Metadata> {
+	const { postId } = await params;
 	const { user } = await validateRequest();
 
 	if (!user) return {};
@@ -43,7 +44,8 @@ export async function generateMetadata({
 	};
 }
 
-export default async function Page({ params: { postId } }: PageProps) {
+export default async function Page({ params }: PageProps) {
+	const { postId } = await params;
 	const { user } = await validateRequest();
 
 	if (!user) {
@@ -61,9 +63,15 @@ export default async function Page({ params: { postId } }: PageProps) {
 			<div className="w-full min-w-0 space-y-5">
 				<Post post={post} />
 			</div>
-			<div className="sticky top-[5.25rem] hidden h-fit w-80 flex-none lg:block">
+			<div className="sticky top-21 hidden h-fit w-80 flex-none lg:block">
 				<Suspense
-					fallback={<Loader2 className="mx-auto animate-spin" />}
+					fallback={
+						<Skeleton
+							role="status"
+							aria-label="Loading author"
+							className="h-32 rounded-lg"
+						/>
+					}
 				>
 					<UserInfoSidebar user={post.user} />
 				</Suspense>
@@ -94,7 +102,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
 						className="flex-none"
 					/>
 					<div>
-						<p className="line-clamp-1 break-all font-semibold hover:underline">
+						<p className="line-clamp-1 font-semibold break-all hover:underline">
 							{user.displayName}
 						</p>
 						<p className="line-clamp-1 break-all text-muted-foreground">
@@ -104,7 +112,7 @@ async function UserInfoSidebar({ user }: UserInfoSidebarProps) {
 				</Link>
 			</UserTooltip>
 			<Linkify>
-				<div className="line-clamp-6 whitespace-pre-line break-words text-muted-foreground">
+				<div className="line-clamp-6 break-words whitespace-pre-line text-muted-foreground">
 					{user.bio}
 				</div>
 			</Linkify>

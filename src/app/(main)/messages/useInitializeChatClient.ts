@@ -6,11 +6,13 @@ import { useSession } from "../SessionProvider";
 export default function useInitializeChatClient() {
 	const { user } = useSession();
 	const [chatClient, setChatClient] = useState<StreamChat | null>(null);
+	const [connectionFailed, setConnectionFailed] = useState(false);
 
 	useEffect(() => {
-		const client = StreamChat.getInstance(
-			process.env.NEXT_PUBLIC_STREAM_KEY!,
-		);
+		let cancelled = false;
+		const client = new StreamChat(process.env.NEXT_PUBLIC_STREAM_KEY!, {
+			timeout: 15_000,
+		});
 
 		client
 			.connectUser(
@@ -18,7 +20,7 @@ export default function useInitializeChatClient() {
 					id: user.id,
 					username: user.username,
 					name: user.displayName,
-					image: user.avatarUrl,
+					image: user.avatarUrl ?? undefined,
 				},
 				async () =>
 					kyInstance
@@ -26,19 +28,28 @@ export default function useInitializeChatClient() {
 						.json<{ token: string }>()
 						.then((data) => data.token),
 			)
-			.catch((error) => console.error("Failed to connect user", error))
-			.then(() => setChatClient(client));
+			.then(() => {
+				if (!cancelled) {
+					setChatClient(client);
+					setConnectionFailed(false);
+				}
+			})
+			.catch((error) => {
+				if (!cancelled) {
+					console.error("Failed to connect to Stream Chat", error);
+					setChatClient(null);
+					setConnectionFailed(true);
+				}
+			});
 
 		return () => {
-			setChatClient(null);
-			client
-				.disconnectUser()
-				.catch((error) =>
-					console.error("Failed to disconnect user", error),
-				)
-				.then(() => console.log("Connection closed"));
+			cancelled = true;
+			setChatClient((current) => (current === client ? null : current));
+			void client.disconnectUser().catch((error) => {
+				console.error("Failed to disconnect from Stream Chat", error);
+			});
 		};
 	}, [user.id, user.username, user.displayName, user.avatarUrl]);
 
-	return chatClient;
+	return { chatClient, connectionFailed };
 }

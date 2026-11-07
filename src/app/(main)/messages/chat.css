@@ -1,0 +1,110 @@
+.tangle-chat .str-chat.str-chat {
+	--str-chat__font-family: inherit;
+	--str-chat__accent-primary: hsl(var(--primary));
+	--str-chat__accent-error: hsl(var(--destructive));
+	--str-chat__text-primary: hsl(var(--foreground));
+	--str-chat__text-secondary: hsl(var(--muted-foreground));
+	--str-chat__text-tertiary: hsl(var(--muted-foreground));
+	--str-chat__text-on-accent: hsl(var(--primary-foreground));
+	--str-chat__text-link: hsl(var(--primary));
+	--str-chat__background-core-app: hsl(var(--background));
+	--str-chat__background-core-elevation-0: hsl(var(--card));
+	--str-chat__background-core-elevation-1: hsl(var(--card));
+	--str-chat__background-core-elevation-2: hsl(var(--popover));
+	--str-chat__background-core-elevation-3: hsl(var(--popover));
+	--str-chat__background-core-surface-default: hsl(var(--background));
+	--str-chat__background-core-surface-card: hsl(var(--card));
+	--str-chat__background-core-surface-subtle: hsl(var(--muted));
+	--str-chat__background-core-surface-strong: hsl(var(--accent));
+	--str-chat__background-utility-hover: hsl(var(--foreground) / 0.08);
+	--str-chat__background-utility-pressed: hsl(var(--accent));
+	--str-chat__background-utility-selected: hsl(var(--accent));
+	--str-chat__border-core-default: hsl(var(--border));
+	--str-chat__border-core-subtle: hsl(var(--border));
+	--str-chat__border-core-strong: hsl(var(--input));
+	--str-chat__border-utility-focused: hsl(var(--ring));
+	--str-chat__chat-bg-incoming: hsl(var(--muted));
+	--str-chat__chat-bg-outgoing: hsl(var(--accent));
+	--str-chat__chat-bg-attachment-incoming: hsl(var(--card));
+	--str-chat__chat-bg-attachment-outgoing: hsl(var(--card));
+	--str-chat__chat-text-incoming: hsl(var(--foreground));
+	--str-chat__chat-text-outgoing: hsl(var(--accent-foreground));
+	--str-chat__chat-text-link: hsl(var(--primary));
+	--str-chat__skeleton-loading-base: hsl(var(--muted));
+	--str-chat__skeleton-loading-highlight: hsl(var(--accent));
+}
+
+.tangle-chat
+	:is(
+		.str-chat__message-actions-box-button,
+		.str-chat__message-reactions-button,
+		.str-chat__message-reactions__list-button,
+		.str-chat__message-reactions__list-item-button,
+		.str-chat__channel-list-item__action-buttons > .str-chat__button,
+		.str-chat__attachment-selector__menu-button
+	) {
+	--str-chat__background-utility-pressed: hsl(var(--foreground) / 0.14);
+	--str-chat__background-utility-selected: var(
+		--str-chat__background-utility-pressed
+	);
+}
+
+/* Tangle controls which pane is visible on narrow screens. */
+.tangle-chat .str-chat__channel-list {
+	position: relative;
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+	min-height: 0;
+	visibility: visible;
+	pointer-events: auto;
+	transform: none;
+}
+
+.tangle-chat .str-chat__channel-list-inner {
+	padding-bottom: 0;
+}
+
+.tangle-chat .str-chat__channel-header {
+	flex: 1;
+	min-width: 0;
+}
+
+.tangle-chat .str-chat__dialog-overlay {
+	z-index: 3;
+}
+
+.tangle-chat
+	.str-chat__message-reactions-detail
+	.str-chat__message-reactions-detail__user-list {
+	padding-block-end: var(--str-chat__size-16);
+}
+
+.tangle-chat
+	.str-chat__message-reactions-detail
+	.str-chat__message-reactions-detail__user-list-container::after {
+	pointer-events: none;
+}
+
+.tangle-chat
+	.str-chat__message-reactions-detail
+	.str-chat__message-reactions-detail__user-list
+	.str-chat__message-reactions-detail__user-list-item {
+	max-height: none;
+}
+
+@media (max-width: 47.999rem), (pointer: coarse) {
+	.tangle-chat
+		.str-chat
+		:is(input[type="text"], input[type="search"], textarea) {
+		font-size: max(16px, 1rem);
+	}
+}
+
+.tangle-chat
+	.str-chat
+	.str-chat__quoted-message-preview
+	.str-chat__quoted-message-preview__content
+	.str-chat__quoted-message-preview__author {
+	overflow: clip;
+}

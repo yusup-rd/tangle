@@ -5,11 +5,13 @@ import { MailPlus, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ChannelList,
-	ChannelPreviewMessenger,
-	ChannelPreviewUIComponentProps,
+	ChannelListItemUI,
+	ChannelListItemUIProps,
 	useChatContext,
+	WithComponents,
 } from "stream-chat-react";
 import { useSession } from "../SessionProvider";
+import { ConversationListSkeleton } from "./ChatLoading";
 import NewChatDialog from "./NewChatDialog";
 
 interface ChatSidebarProps {
@@ -33,11 +35,13 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
 	}, [channel?.id, queryClient]);
 
 	const ChannelPreviewCustom = useCallback(
-		(props: ChannelPreviewUIComponentProps) => (
-			<ChannelPreviewMessenger
+		(props: ChannelListItemUIProps) => (
+			<ChannelListItemUI
 				{...props}
-				onSelect={() => {
-					props.setActiveChannel?.(props.channel, props.watchers);
+				onSelect={(event) => {
+					if (props.onSelect) props.onSelect(event);
+					else
+						props.setActiveChannel?.(props.channel, props.watchers);
 					onClose();
 				}}
 			/>
@@ -48,32 +52,48 @@ export default function ChatSidebar({ open, onClose }: ChatSidebarProps) {
 	return (
 		<div
 			className={cn(
-				"size-full flex-col border-e md:flex md:w-72",
+				"min-h-0 w-full shrink-0 flex-col md:flex md:w-64 md:border-e lg:w-72",
 				open ? "flex" : "hidden",
 			)}
 		>
 			<MenuHeader onClose={onClose} />
-			<ChannelList
-				filters={{
-					type: "messaging",
-					members: { $in: [user.id] },
+			<WithComponents
+				overrides={{
+					ChannelListItemUI: ChannelPreviewCustom,
+					LoadingErrorIndicator: ConversationListError,
+					LoadingIndicator: ConversationListSkeleton,
 				}}
-				showChannelSearch
-				options={{ state: true, presence: true, limit: 8 }}
-				sort={{ last_message_at: -1 }}
-				additionalChannelSearchProps={{
-					searchForChannels: true,
-					searchQueryParams: {
-						channelFilters: {
-							filters: { members: { $in: [user.id] } },
-						},
-					},
-				}}
-				Preview={ChannelPreviewCustom}
-			/>
+			>
+				<ChannelList
+					filters={{
+						type: "messaging",
+						members: { $in: [user.id] },
+					}}
+					showChannelSearch
+					options={{ state: true, presence: true, limit: 8 }}
+					sort={{ last_message_at: -1 }}
+				/>
+			</WithComponents>
 		</div>
 	);
 }
+
+const ConversationListError = () => {
+	return (
+		<div className="flex flex-col items-start gap-3 p-3">
+			<p role="alert" className="text-sm text-muted-foreground">
+				Conversations couldn’t load.
+			</p>
+			<Button
+				variant="outline"
+				size="sm"
+				onClick={() => window.location.reload()}
+			>
+				Try again
+			</Button>
+		</div>
+	);
+};
 
 interface MenuHeaderProps {
 	onClose: () => void;
@@ -84,9 +104,14 @@ function MenuHeader({ onClose }: MenuHeaderProps) {
 
 	return (
 		<>
-			<div className="flex items-center gap-3 p-2">
+			<div className="flex shrink-0 items-center gap-3 p-2">
 				<div className="h-full md:hidden">
-					<Button size="icon" variant="ghost" onClick={onClose}>
+					<Button
+						size="icon"
+						variant="ghost"
+						aria-label="Close conversations"
+						onClick={onClose}
+					>
 						<X className="size-5" />
 					</Button>
 				</div>

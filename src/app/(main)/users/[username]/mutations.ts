@@ -1,6 +1,6 @@
 import { useToast } from "@/components/ui/use-toast";
 import { PostPage } from "@/lib/types";
-import { useUploadThing } from "@/lib/uploadthing";
+import { uploadFiles } from "@/lib/uploadthing";
 import { UpdateUserProfileValues } from "@/lib/validation";
 import {
 	InfiniteData,
@@ -18,8 +18,6 @@ export function useUpdateProfileMutation() {
 
 	const queryClient = useQueryClient();
 
-	const { startUpload: startAvatarUpload } = useUploadThing("avatar");
-
 	const mutation = useMutation({
 		mutationFn: async ({
 			values,
@@ -28,15 +26,32 @@ export function useUpdateProfileMutation() {
 			values: UpdateUserProfileValues;
 			avatar?: File;
 		}) => {
-			return Promise.all([
-				updateUserProfile(values),
-				avatar && startAvatarUpload([avatar]),
-			]);
-		},
-		onSuccess: async ([updatedUser, uploadResult]) => {
-            console.log("Upload Result:", uploadResult);
-			const newAvatarUrl = uploadResult?.[0].serverData.avatarUrl;
+			const updatedUser = await updateUserProfile(values);
+			if (!avatar) return { updatedUser, avatarFailed: false };
 
+			const controller = new AbortController();
+			const timeout = setTimeout(() => controller.abort(), 60_000);
+			try {
+				const [result] = await uploadFiles("avatar", {
+					files: [avatar],
+					signal: controller.signal,
+				});
+				const avatarUrl = result?.serverData?.avatarUrl;
+				if (typeof avatarUrl === "string" && avatarUrl) {
+					return {
+						updatedUser: { ...updatedUser, avatarUrl },
+						avatarFailed: false,
+					};
+				}
+			} catch (error) {
+				console.error("Could not upload avatar", error);
+			} finally {
+				clearTimeout(timeout);
+			}
+
+			return { updatedUser, avatarFailed: true };
+		},
+		onSuccess: async ({ updatedUser, avatarFailed }) => {
 			const queryFilter: QueryFilters = {
 				queryKey: ["post-feed"],
 			};
@@ -56,12 +71,7 @@ export function useUpdateProfileMutation() {
 								if (post.user.id === updatedUser.id) {
 									return {
 										...post,
-										user: {
-											...updatedUser,
-											avatarUrl:
-												newAvatarUrl ||
-												updatedUser.avatarUrl,
-										},
+										user: updatedUser,
 									};
 								}
 								return post;
@@ -73,9 +83,15 @@ export function useUpdateProfileMutation() {
 
 			router.refresh();
 
-			toast({
-				description: "Profile updated",
-			});
+			if (avatarFailed) {
+				toast({
+					variant: "destructive",
+					description:
+						"Profile details were saved. Please retry the avatar upload.",
+				});
+			} else {
+				toast({ description: "Profile updated" });
+			}
 		},
 		onError(error) {
 			console.error(error);

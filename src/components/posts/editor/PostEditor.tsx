@@ -1,20 +1,20 @@
 "use client";
 
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import Placeholder from "@tiptap/extension-placeholder";
-import UserProfile from "@/components/UserProfile";
 import { useSession } from "@/app/(main)/SessionProvider";
-import "./styles.css";
-import { useSubmitPostMutation } from "./mutations";
 import LoadingButton from "@/components/LoadingButton";
-import useMediaUpload, { Attachment } from "./useMediaUpload";
-import { ClipboardEvent, useRef } from "react";
-import { ImageIcon, Loader2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import UserProfile from "@/components/UserProfile";
 import { cn } from "@/lib/utils";
-import Image from "next/image";
+import Placeholder from "@tiptap/extension-placeholder";
+import { EditorContent, useEditor, useEditorState } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { useDropzone } from "@uploadthing/react";
+import { ImageIcon, Loader2, X } from "lucide-react";
+import Image from "next/image";
+import { ClipboardEvent, useRef } from "react";
+import { useSubmitPostMutation } from "./mutations";
+import "./styles.css";
+import useMediaUpload, { Attachment } from "./useMediaUpload";
 
 export default function PostEditor() {
 	const { user } = useSession();
@@ -31,12 +31,20 @@ export default function PostEditor() {
 	} = useMediaUpload();
 
 	const { getRootProps, getInputProps, isDragActive } = useDropzone({
-		onDrop: startUpload,
+		onDrop: (files) => {
+			if (!mutation.isPending) void startUpload(files);
+		},
 	});
 
-	const { onClick, ...rootProps } = getRootProps();
-
 	const editor = useEditor({
+		immediatelyRender: false,
+		editorProps: {
+			attributes: {
+				role: "textbox",
+				"aria-label": "Write a post",
+				"aria-multiline": "true",
+			},
+		},
 		extensions: [
 			StarterKit.configure({
 				bold: false,
@@ -49,9 +57,11 @@ export default function PostEditor() {
 	});
 
 	const input =
-		editor?.getText({
-			blockSeparator: "\n",
-		}) || "";
+		useEditorState({
+			editor,
+			selector: ({ editor }) =>
+				editor?.getText({ blockSeparator: "\n" }) ?? "",
+		}) ?? "";
 
 	function onSubmit() {
 		mutation.mutate(
@@ -59,7 +69,7 @@ export default function PostEditor() {
 				content: input,
 				mediaIds: attachments
 					.map((attachment) => attachment.mediaId)
-					.filter(Boolean) as string[],
+					.filter((mediaId) => mediaId !== undefined),
 			},
 			{
 				onSuccess: () => {
@@ -73,8 +83,9 @@ export default function PostEditor() {
 	function onPaste(e: ClipboardEvent<HTMLInputElement>) {
 		const files = Array.from(e.clipboardData.items)
 			.filter((item) => item.kind === "file")
-			.map((item) => item.getAsFile()) as File[];
-		startUpload(files);
+			.map((item) => item.getAsFile())
+			.filter((file) => file !== null);
+		if (!mutation.isPending) void startUpload(files);
 	}
 
 	return (
@@ -84,11 +95,17 @@ export default function PostEditor() {
 					avatarUrl={user.avatarUrl}
 					className="hidden sm:inline"
 				/>
-				<div {...rootProps} className="w-full">
+				<div
+					{...getRootProps()}
+					tabIndex={undefined}
+					onClick={undefined}
+					onKeyDown={undefined}
+					className="w-full"
+				>
 					<EditorContent
 						editor={editor}
 						className={cn(
-							"max-h-[20rem] w-full overflow-y-auto rounded-lg bg-background px-5 py-3",
+							"max-h-80 w-full overflow-y-auto rounded-lg bg-background px-5 py-3 focus-within:ring-2 focus-within:ring-ring",
 							isDragActive && "outline-dashed",
 						)}
 						onPaste={onPaste}
@@ -103,15 +120,27 @@ export default function PostEditor() {
 				/>
 			)}
 			<div className="flex items-center justify-end gap-3">
-				{isUploading && (
-					<>
-						<span className="text-sm">{uploadProgress ?? 0}%</span>
-						<Loader2 className="size-5 animate-spin text-primary" />
-					</>
+				{uploadProgress !== undefined && (
+					<span
+						role="status"
+						className="flex items-center gap-2 text-sm text-muted-foreground"
+					>
+						<Loader2
+							aria-hidden="true"
+							className="size-5 text-primary motion-safe:animate-spin"
+						/>
+						{uploadProgress === 100
+							? "Finishing upload…"
+							: `Uploading ${uploadProgress}%`}
+					</span>
 				)}
 				<AddAttachmentsButton
 					onSelectFiles={startUpload}
-					disabled={isUploading || attachments.length >= 5}
+					disabled={
+						mutation.isPending ||
+						isUploading ||
+						attachments.length >= 5
+					}
 				/>
 				<LoadingButton
 					onClick={onSubmit}
@@ -143,6 +172,7 @@ function AddAttachmentsButton({
 				variant="ghost"
 				size="icon"
 				className="text-primary hover:text-primary"
+				aria-label="Add attachments"
 				onClick={() => fileInputRef.current?.click()}
 				disabled={disabled}
 			>
@@ -201,35 +231,34 @@ interface AttachmentPreviewProps {
 }
 
 function AttachmentPreview({
-	attachment: { file, mediaId, isUploading },
+	attachment: { file, previewUrl, mediaId },
 	onRemoveClick,
 }: AttachmentPreviewProps) {
-	const src = URL.createObjectURL(file);
-
 	return (
 		<div
 			className={cn(
 				"relative mx-auto size-fit",
-				isUploading && "opacity-50",
+				!mediaId && "opacity-50",
 			)}
 		>
 			{file.type.startsWith("image") ? (
 				<Image
-					src={src}
+					src={previewUrl}
 					alt="Attachment preview"
 					width={500}
 					height={500}
-					className="size-fit max-h-[30rem] rounded-lg"
+					className="size-fit max-h-120 rounded-lg"
 				/>
 			) : (
-				<video controls className="size-fit max-h-[30rem] rounded-lg">
-					<source src={src} type={file.type} />
+				<video controls className="size-fit max-h-120 rounded-lg">
+					<source src={previewUrl} type={file.type} />
 				</video>
 			)}
-			{!isUploading && (
+			{mediaId && (
 				<button
+					aria-label={`Remove ${file.name}`}
 					onClick={onRemoveClick}
-					className="absolute right-3 top-3 rounded-full bg-foreground p-1.5 text-background transition-colors hover:bg-foreground/60"
+					className="absolute top-3 right-3 rounded-full bg-foreground p-1.5 text-background transition-colors hover:bg-foreground/60"
 				>
 					<X size={20} />
 				</button>

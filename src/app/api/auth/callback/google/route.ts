@@ -1,40 +1,74 @@
-import { google, lucia } from "@/auth";
+import { startSession } from "@/auth";
+import {
+	getGoogleOAuthConfig,
+	googleAuthorizationServer,
+} from "@/lib/google-oauth";
 import kyInstance from "@/lib/ky";
 import prisma from "@/lib/prisma";
 import streamServerClient from "@/lib/stream";
 import { slugify } from "@/lib/utils";
-import { OAuth2RequestError } from "arctic";
-import { generateIdFromEntropySize } from "lucia";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
+import { randomBytes } from "node:crypto";
+import {
+	authorizationCodeGrantRequest,
+	ClientSecretPost,
+	processAuthorizationCodeResponse,
+	validateAuthResponse,
+} from "oauth4webapi";
 
 export async function GET(req: NextRequest) {
-	const code = req.nextUrl.searchParams.get("code");
-	const state = req.nextUrl.searchParams.get("state");
+	const cookieStore = await cookies();
+	const storedState = cookieStore.get("state")?.value;
+	const storedCodeVerifier = cookieStore.get("code_verifier")?.value;
 
-	const storedState = cookies().get("state")?.value;
-	const storedCodeVerifier = cookies().get("code_verifier")?.value;
-
-	if (
-		!code ||
-		!state ||
-		!storedState ||
-		!storedCodeVerifier ||
-		state !== storedState
-	) {
+	if (!storedState || !storedCodeVerifier) {
 		return new Response(null, { status: 400 });
 	}
 
+	const { client, clientSecret, redirectUri } = getGoogleOAuthConfig();
+	let params: URLSearchParams;
 	try {
-		const tokens = await google.validateAuthorizationCode(
-			code,
+		params = validateAuthResponse(
+			googleAuthorizationServer,
+			client,
+			req.nextUrl.searchParams,
+			storedState,
+		);
+	} catch {
+		return new Response(null, { status: 400 });
+	}
+
+	if (!params.has("code")) return new Response(null, { status: 400 });
+
+	cookieStore.delete("state");
+	cookieStore.delete("code_verifier");
+
+	let accessToken: string;
+	try {
+		const response = await authorizationCodeGrantRequest(
+			googleAuthorizationServer,
+			client,
+			ClientSecretPost(clientSecret),
+			params,
+			redirectUri,
 			storedCodeVerifier,
 		);
+		const tokens = await processAuthorizationCodeResponse(
+			googleAuthorizationServer,
+			client,
+			response,
+		);
+		accessToken = tokens.access_token;
+	} catch {
+		return new Response(null, { status: 502 });
+	}
 
+	try {
 		const googleUser = await kyInstance
 			.get("https://www.googleapis.com/oauth2/v1/userinfo", {
 				headers: {
-					Authorization: `Bearer ${tokens.accessToken}`,
+					Authorization: `Bearer ${accessToken}`,
 				},
 			})
 			.json<{ id: string; name: string }>();
@@ -46,13 +80,7 @@ export async function GET(req: NextRequest) {
 		});
 
 		if (existingUser) {
-			const session = await lucia.createSession(existingUser.id, {});
-			const sessionCookie = lucia.createSessionCookie(session.id);
-			cookies().set(
-				sessionCookie.name,
-				sessionCookie.value,
-				sessionCookie.attributes,
-			);
+			await startSession(existingUser.id);
 			return new Response(null, {
 				status: 302,
 				headers: {
@@ -61,7 +89,7 @@ export async function GET(req: NextRequest) {
 			});
 		}
 
-		const userId = generateIdFromEntropySize(10);
+		const userId = randomBytes(10).toString("hex");
 
 		const username = slugify(googleUser.name) + "-" + userId.slice(0, 4);
 
@@ -81,13 +109,7 @@ export async function GET(req: NextRequest) {
 			});
 		});
 
-		const session = await lucia.createSession(userId, {});
-		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies().set(
-			sessionCookie.name,
-			sessionCookie.value,
-			sessionCookie.attributes,
-		);
+		await startSession(userId);
 
 		return new Response(null, {
 			status: 302,
@@ -96,12 +118,10 @@ export async function GET(req: NextRequest) {
 			},
 		});
 	} catch (error) {
-		console.error(error);
-		if (error instanceof OAuth2RequestError) {
-			return new Response(null, {
-				status: 400,
-			});
-		}
+		console.error(
+			"Google sign-in failed",
+			error instanceof Error ? error.name : "unknown error",
+		);
 		return new Response(null, {
 			status: 500,
 		});

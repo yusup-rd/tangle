@@ -5,10 +5,12 @@ import {
 	Channel,
 	ChannelHeader,
 	ChannelHeaderProps,
-	MessageInput,
+	MessageComposer,
 	MessageList,
 	Window,
+	WithComponents,
 } from "stream-chat-react";
+import { MessageListSkeleton } from "./ChatLoading";
 
 interface ChatChannelProps {
 	open: boolean;
@@ -17,14 +19,33 @@ interface ChatChannelProps {
 
 export default function ChatChannel({ open, openSidebar }: ChatChannelProps) {
 	return (
-		<div className={cn("w-full md:block", !open && "hidden")}>
-			<Channel>
-				<Window>
-					<CustomChannelHeader openSidebar={openSidebar} />
-					<MessageList />
-					<MessageInput grow={true} />
-				</Window>
-			</Channel>
+		<div className={cn("min-w-0 flex-1 md:block", !open && "hidden")}>
+			<WithComponents
+				overrides={{ LoadingIndicator: MessageListSkeleton }}
+			>
+				<Channel
+					EmptyPlaceholder={
+						<div className="flex h-full flex-col items-center justify-center gap-3 p-4">
+							<p className="text-muted-foreground">
+								Choose a conversation to see its messages.
+							</p>
+							<Button
+								className="md:hidden"
+								variant="outline"
+								onClick={openSidebar}
+							>
+								Open conversations
+							</Button>
+						</div>
+					}
+				>
+					<Window>
+						<CustomChannelHeader openSidebar={openSidebar} />
+						<MessageList />
+						<MessageComposer />
+					</Window>
+				</Channel>
+			</WithComponents>
 		</div>
 	);
 }
@@ -38,9 +59,14 @@ function CustomChannelHeader({
 	...props
 }: CustomChannelHeaderProps) {
 	return (
-		<div className="flex items-center gap-3">
-			<div className="h-full p-2 md:hidden">
-				<Button size="icon" variant="ghost" onClick={openSidebar}>
+		<div className="flex min-w-0 items-center">
+			<div className="shrink-0 p-2 md:hidden">
+				<Button
+					size="icon"
+					variant="ghost"
+					aria-label="Open conversations"
+					onClick={openSidebar}
+				>
 					<Menu className="size-5" />
 				</Button>
 			</div>

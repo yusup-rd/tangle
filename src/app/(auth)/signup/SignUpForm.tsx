@@ -1,8 +1,7 @@
 "use client";
 
-import { signUpSchema, SignUpValues } from "@/lib/validation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
+import LoadingButton from "@/components/LoadingButton";
+import { PasswordInput } from "@/components/PasswordInput";
 import {
 	Form,
 	FormControl,
@@ -12,12 +11,15 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import useHydrated from "@/hooks/useHydrated";
+import { signUpSchema, SignUpValues } from "@/lib/validation";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
 import { signUp } from "./actions";
-import { PasswordInput } from "@/components/PasswordInput";
-import LoadingButton from "@/components/LoadingButton";
 
 export default function SignUpForm() {
+	const hydrated = useHydrated();
 	const [error, setError] = useState<string>();
 
 	const [isPending, startTransition] = useTransition();
@@ -41,9 +43,16 @@ export default function SignUpForm() {
 
 	return (
 		<Form {...form}>
-			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
+			<form
+				method="post"
+				noValidate
+				onSubmit={form.handleSubmit(onSubmit)}
+				className="space-y-3"
+			>
 				{error && (
-					<p className="text-center text-destructive">{error}</p>
+					<p role="alert" className="text-center text-destructive">
+						{error}
+					</p>
 				)}
 				<FormField
 					control={form.control}
@@ -52,7 +61,12 @@ export default function SignUpForm() {
 						<FormItem>
 							<FormLabel>Username</FormLabel>
 							<FormControl>
-								<Input placeholder="Username" {...field} />
+								<Input
+									placeholder="Username"
+									autoComplete="username"
+									disabled={!hydrated}
+									{...field}
+								/>
 							</FormControl>
 							<FormMessage />
 						</FormItem>
@@ -68,6 +82,8 @@ export default function SignUpForm() {
 								<Input
 									placeholder="Email"
 									type="email"
+									autoComplete="email"
+									disabled={!hydrated}
 									{...field}
 								/>
 							</FormControl>
@@ -84,6 +100,8 @@ export default function SignUpForm() {
 							<FormControl>
 								<PasswordInput
 									placeholder="Password"
+									autoComplete="new-password"
+									disabled={!hydrated}
 									{...field}
 								/>
 							</FormControl>
@@ -93,11 +111,17 @@ export default function SignUpForm() {
 				/>
 				<LoadingButton
 					loading={isPending}
+					disabled={!hydrated}
 					type="submit"
 					className="w-full"
 				>
 					Create Account
 				</LoadingButton>
+				<noscript>
+					<p className="text-sm text-muted-foreground">
+						Enable JavaScript to use this form.
+					</p>
+				</noscript>
 			</form>
 		</Form>
 	);
