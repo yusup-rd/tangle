@@ -247,7 +247,7 @@ function AttachmentPreview({
 					alt="Attachment preview"
 					width={500}
 					height={500}
-					className="size-fit max-h-120 rounded-lg"
+					className="aspect-auto h-auto max-h-120 w-auto max-w-full rounded-lg object-contain"
 				/>
 			) : (
 				<video controls className="size-fit max-h-120 rounded-lg">

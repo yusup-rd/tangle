@@ -129,7 +129,7 @@ function MediaPreview({ media }: MediaPreviewProps) {
 				alt="Attachment"
 				width={500}
 				height={500}
-				className="mx-auto size-fit max-h-120 rounded-lg"
+				className="mx-auto aspect-auto h-auto max-h-120 w-auto max-w-full rounded-lg object-contain"
 			/>
 		);
 	}
