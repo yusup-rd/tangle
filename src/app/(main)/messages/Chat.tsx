@@ -19,6 +19,7 @@ export default function Chat() {
 
 	const [sidebarOpen, setSidebarOpen] = useState(true);
 	const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+	const openSidebar = useCallback(() => setSidebarOpen(true), []);
 	const searchController = useMemo(() => {
 		if (!chatClient?.userID) return undefined;
 		return new SearchController({
@@ -60,7 +61,7 @@ export default function Chat() {
 					<ChatSidebar open={sidebarOpen} onClose={closeSidebar} />
 					<ChatChannel
 						open={!sidebarOpen}
-						openSidebar={() => setSidebarOpen(true)}
+						openSidebar={openSidebar}
 					/>
 				</StreamChat>
 			</div>

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
-import { MailPlus, X } from "lucide-react";
+import { MailPlus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import {
 	ChannelList,
@@ -105,17 +105,7 @@ function MenuHeader({ onClose }: MenuHeaderProps) {
 	return (
 		<>
 			<div className="flex shrink-0 items-center gap-3 p-2">
-				<div className="h-full md:hidden">
-					<Button
-						size="icon"
-						variant="ghost"
-						aria-label="Close conversations"
-						onClick={onClose}
-					>
-						<X className="size-5" />
-					</Button>
-				</div>
-				<h1 className="me-auto text-xl font-bold md:ms-2">Messages</h1>
+				<h1 className="ms-2 me-auto text-xl font-bold">Messages</h1>
 				<Button
 					size="icon"
 					variant="ghost"
