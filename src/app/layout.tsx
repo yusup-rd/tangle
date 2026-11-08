@@ -18,6 +18,18 @@ export const metadata: Metadata = {
 		default: "Tangle",
 	},
 	description: "Where connections and stories intertwine.",
+	icons: {
+		icon: {
+			url: "/tangle-favicon.png",
+			sizes: "48x48",
+			type: "image/png",
+		},
+		apple: {
+			url: "/apple-touch-icon.png",
+			sizes: "180x180",
+			type: "image/png",
+		},
+	},
 };
 
 export default function RootLayout({
