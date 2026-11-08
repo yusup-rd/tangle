@@ -2,6 +2,7 @@ import SearchField from "@/components/SearchField";
 import UserButton from "@/components/UserButton";
 import Image from "next/image";
 import Link from "next/link";
+import tangleLogo from "../../../public/tangle-favicon.png";
 
 export default function Navbar() {
 	return (
@@ -16,7 +17,7 @@ export default function Navbar() {
 					className="flex shrink-0 items-center gap-2 text-2xl font-bold tracking-tight text-primary"
 				>
 					<Image
-						src="/icon.ico"
+						src={tangleLogo}
 						alt=""
 						width={32}
 						height={32}
